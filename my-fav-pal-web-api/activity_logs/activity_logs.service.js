@@ -1,4 +1,4 @@
-import ActivityLog from './activity_logs.entity.js';
+import ActivityLog from './entities/activity_log.entity.js';
 
 export default class ActivityLogService {
   constructor() {}

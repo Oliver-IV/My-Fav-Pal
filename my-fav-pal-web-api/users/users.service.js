@@ -1,4 +1,4 @@
-import User from './users.entity.js';
+import User from './entities/user.entity.js';
 
 export default class UserService {
   constructor() {}

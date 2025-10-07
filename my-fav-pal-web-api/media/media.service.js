@@ -1,4 +1,4 @@
-import Media from './media.entity.js';
+import Media from './entities/media.entity.js';
 
 export default class MediaService {
   constructor() {}

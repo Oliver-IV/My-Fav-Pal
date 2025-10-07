@@ -1,4 +1,4 @@
-import List from './lists.entity.js';
+import List from './entities/list.entity.js'
 
 export default class ListService {
   constructor() {}

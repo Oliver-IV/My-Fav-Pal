@@ -1,4 +1,4 @@
-import Review from './reviews.entity.js';
+import Review from './entities/review.entity.js';
 
 export default class ReviewService {
   constructor() {}
