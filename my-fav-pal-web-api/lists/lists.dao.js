@@ -1,6 +1,6 @@
-const List = require('./list.model');
-class ListDAO {
+const List = require('./entities/list.entity.js'); 
 
+class ListDAO {
     findAll() {
         return List.find({});
     }

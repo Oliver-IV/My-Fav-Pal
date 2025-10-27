@@ -1,26 +1,34 @@
-import List from './entities/list.entity.js'
 
-export default class ListService {
-  constructor() {}
+const listDAO = require('./lists.dao');
 
-  async createList(listData) {
-    const list = new List(listData);
-    return await list.save();
-  }
+class ListService {
+    async getAllLists() {
+        return listDAO.findAll();
+    }
 
-  async getListsByOwner(ownerId) {
-    return await List.find({ ownerId }).populate('items.mediaId', 'name type');
-  }
+    async getListById(id) {
+        const list = await listDAO.findById(id);
+        if (!list) {
+            const error = new Error(`Lista con ID ${id} no encontrada.`);
+            error.status = 404;
+            throw error;
+        }
+        return list;
+    }
+    
+    async createList(listData) {
+        return listDAO.create(listData);
+    }
 
-  async getListById(id) {
-    return await List.findById(id).populate('items.mediaId', 'name type');
-  }
-
-  async updateList(id, updateData) {
-    return await List.findByIdAndUpdate(id, updateData, { new: true });
-  }
-
-  async deleteList(id) {
-    return await List.findByIdAndDelete(id);
-  }
+    async updateList(id, updateData) {
+        await this.getListById(id); 
+        return listDAO.update(id, updateData);
+    }
+    
+    async deleteList(id) {
+        await this.getListById(id);
+        return listDAO.delete(id);
+    }
 }
+
+module.exports = new ListService();

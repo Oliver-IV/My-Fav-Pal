@@ -1,44 +1,53 @@
-exports.getLists = (req, res) => {
-    res.status(200).json(lists);
-};
+const listService = require('./lists.service');
+const CreateListDTO = require('./dtos/lists.createDTO.js'); 
+const UpdateListDTO = require('./dtos/lists.updateDTO.js'); 
 
-
-exports.getListById = (req, res) => {
-    const listId = req.params.id;
-    const list = lists.find(l => l._id === listId);
-
-    if (list) {
-        res.status(200).json(list);
-    } else {
-        res.status(404).json({ message: `Lista con ID ${listId} no encontrada` });
+exports.getLists = async (req, res) => {
+    try {
+        const lists = await listService.getAllLists();
+        res.status(200).json(lists);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
 
-
-exports.createList = (req, res) => {
-
-    const newList = {
-        ...req.body,
-        _id: generateDummyId(),
-        createdAt: new Date().toISOString(),
-        items: req.body.items || [], 
-        visibility: req.body.visibility || 'private' 
-    };
-    res.status(201).json(newList);
+exports.getListById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const list = await listService.getListById(id);
+        res.status(200).json(list);
+    } catch (error) {
+        res.status(error.status || 500).json({ message: error.message });
+    }
 };
 
-
-exports.updateList = (req, res) => {
-    const listId = req.params.id;
-    const updatedList = {
-        ...req.body,
-        _id: listId
-    };
-    res.status(200).json(updatedList);
+exports.createList = async (req, res) => {
+    try {
+        const createListDTO = new CreateListDTO(req.body);
+        const newList = await listService.createList(createListDTO);
+        res.status(201).json(newList);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
 };
 
+exports.updateList = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateListDTO = new UpdateListDTO(req.body);
+        const updatedList = await listService.updateList(id, updateListDTO);
+        res.status(200).json(updatedList);
+    } catch (error) {
+        res.status(error.status || 400).json({ message: error.message });
+    }
+};
 
-exports.deleteList = (req, res) => {
-    const listId = req.params.id;
-    res.status(200).json({ message: `Lista con ID ${listId} eliminada!`});
+exports.deleteList = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await listService.deleteList(id);
+        res.status(204).send();
+    } catch (error) {
+        res.status(error.status || 500).json({ message: error.message });
+    }
 };
