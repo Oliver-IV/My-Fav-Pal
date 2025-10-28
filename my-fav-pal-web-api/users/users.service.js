@@ -1,4 +1,5 @@
 import userDAO from './users.dao.js';
+import bcrypt from 'bcryptjs';
 
 export default class UserService {
 
