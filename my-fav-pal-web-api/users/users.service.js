@@ -1,26 +1,39 @@
-import User from './entities/user.entity.js';
+import userDAO from './users.dao.js';
 
 export default class UserService {
-  constructor() {}
+    
+    async createUser(userData) {
+        const existingUser = await userDAO.findByEmail(userData.email);
+        if (existingUser) {
+            const error = new Error('El correo electrónico ya está en uso.');
+            error.status = 409; 
+            throw error;
+        }
+        
+        return userDAO.create(userData);
+    }
 
-  async createUser(userData) {
-    const user = new User(userData);
-    return await user.save();
-  }
+    async getAllUsers() {
+        return userDAO.findAll();
+    }
 
-  async getAllUsers() {
-    return await User.find();
-  }
+    async getUserById(id) {
+        const user = await userDAO.findById(id);
+        if (!user) {
+            const error = new Error(`Usuario con ID ${id} no encontrado.`);
+            error.status = 404;
+            throw error;
+        }
+        return user;
+    }
 
-  async getUserById(id) {
-    return await User.findById(id);
-  }
+    async updateUser(id, updateData) {
+        await this.getUserById(id); 
+        return userDAO.update(id, updateData);
+    }
 
-  async updateUser(id, updateData) {
-    return await User.findByIdAndUpdate(id, updateData, { new: true });
-  }
-
-  async deleteUser(id) {
-    return await User.findByIdAndDelete(id);
-  }
+    async deleteUser(id) {
+        await this.getUserById(id); 
+        return userDAO.delete(id);
+    }
 }
