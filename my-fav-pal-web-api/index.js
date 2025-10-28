@@ -3,10 +3,18 @@ import mongoose from 'mongoose';
 import readlineSync from 'readline-sync';
 import chalk from 'chalk';
 
+
 import UserService from './users/users.service.js';
 import MediaService from './media/media.service.js';
 import ReviewService from './reviews/reviews.service.js';
 import ActivityLogService from './activity_logs/activity_logs.service.js';
+
+
+import CreateUserDTO from './users/dtos/users.createDTO.js';
+import UpdateUserDTO from './users/dtos/users.updateDTO.js';
+import CreateMediaDTO from './media/dtos/media.createDTO.js';
+import CreateReviewDTO from './reviews/dtos/review.createDTO.js';
+import CreateActivityLogDTO from './activity_logs/dtos/activity_log.dto.js';
 
 const main = async () => {
   await connectDB();
@@ -16,167 +24,158 @@ const main = async () => {
   const reviewService = new ReviewService();
   const activityLogService = new ActivityLogService();
 
+
   const showMainMenu = () => {
-    console.log(chalk.bold.yellow('\n--- menu principal ---'));
-    console.log('1. gestionar usuarios');
-    console.log('2. gestionar media');
-    console.log('3. gestionar reviews');
-    console.log('4. ver logs de actividad');
-    console.log('5. salir');
-    return readlineSync.question('elige una opcion: ');
+    console.log(chalk.bold.yellow('\n--- MENÚ PRINCIPAL ---'));
+    console.log('1. Gestionar Usuarios');
+    console.log('2. Gestionar Media');
+    console.log('3. Gestionar Reseñas (Reviews)');
+    console.log('4. Ver Logs de Actividad');
+    console.log('5. Salir');
+    return readlineSync.question('Elige una opcion: ');
   };
 
   const manageUsers = async () => {
-    console.log(chalk.bold.cyan('\n--- gestionar usuarios ---'));
-    console.log('1. crear usuario');
-    console.log('2. ver todos los usuarios');
-    console.log('3. buscar usuario por id');
-    console.log('4. actualizar usuario');
-    console.log('5. eliminar usuario');
-    const choice = readlineSync.question('elige una opcion: ');
+    console.log(chalk.bold.cyan('\n--- Gestionar Usuarios ---'));
+    console.log('1. Crear Usuario');
+    console.log('2. Ver todos los Usuarios');
+    console.log('3. Buscar Usuario por ID');
+    console.log('4. Actualizar Usuario');
+    console.log('5. Eliminar Usuario');
+    const choice = readlineSync.question('Elige una opcion: ');
 
     switch (choice) {
       case '1': {
-        const email = readlineSync.question('email: ');
-        const password = readlineSync.question('contrasena: ', { hideEchoBack: true });
-        const displayName = readlineSync.question('nombre de usuario: ');
-        const avatarUrl = readlineSync.question('url del avatar (opcional): ');
-        const newUser = await userService.createUser({ email, password, displayName, avatarUrl });
-        console.log(chalk.green('usuario creado:'), newUser);
+        const email = readlineSync.question('Email: ');
+        const password = readlineSync.question('Contrasena: ', { hideEchoBack: true });
+        const displayName = readlineSync.question('Nombre de usuario: ');
+
+   
+        const userData = new CreateUserDTO({ email, password, displayName });
+        const newUser = await userService.createUser(userData);
+        console.log(chalk.green('Usuario creado:'), newUser);
+
+        const logData = new CreateActivityLogDTO({ userId: newUser._id, actionType: 'USER_CREATED' });
+        await activityLogService.createLog(logData);
+        console.log(chalk.blue('Log de actividad registrado.'));
         break;
       }
       case '2': {
         const allUsers = await userService.getAllUsers();
-        console.log(chalk.green('todos los usuarios:'), allUsers);
+        console.log(chalk.green('Todos los usuarios:'), allUsers);
         break;
       }
       case '3': {
-        const userId = readlineSync.question('id del usuario: ');
+        const userId = readlineSync.question('ID del usuario: ');
         const user = await userService.getUserById(userId);
-        console.log(chalk.green('usuario encontrado:'), user || 'usuario no encontrado');
+        console.log(chalk.green('Usuario encontrado:'), user || 'Usuario no encontrado');
         break;
       }
       case '4': {
-        const userId = readlineSync.question('id del usuario a actualizar: ');
-        const user = await userService.getUserById(userId);
-        if (!user) {
-            console.log(chalk.red('usuario no encontrado.'));
-            return;
-        }
+        const userId = readlineSync.question('ID del usuario a actualizar: ');
+        const displayName = readlineSync.question(`Nuevo nombre de usuario (dejar en blanco para no cambiar): `);
+        const avatarUrl = readlineSync.question(`Nueva URL del avatar (dejar en blanco para no cambiar): `);
 
-        console.log(chalk.yellow('introduce los nuevos datos (deja en blanco para no cambiar).'));
-        const email = readlineSync.question(`email (${user.email}): `);
-        const displayName = readlineSync.question(`nombre de usuario (${user.displayName}): `);
-        const avatarUrl = readlineSync.question(`url del avatar (${user.avatarUrl || ''}): `);
-        
-        const updateData = {};
-        if (email) updateData.email = email;
-        if (displayName) updateData.displayName = displayName;
-        if (avatarUrl) updateData.avatarUrl = avatarUrl;
+        const updateData = new UpdateUserDTO({ displayName, avatarUrl });
 
         if (Object.keys(updateData).length > 0) {
-            const updatedUser = await userService.updateUser(userId, updateData);
-            console.log(chalk.green('usuario actualizado:'), updatedUser);
+          const updatedUser = await userService.updateUser(userId, updateData);
+          console.log(chalk.green('Usuario actualizado:'), updatedUser);
         } else {
-            console.log(chalk.yellow('no se proporcionaron datos para actualizar.'));
+          console.log(chalk.yellow('No se proporcionaron datos para actualizar.'));
         }
         break;
       }
       case '5': {
-        const userId = readlineSync.question('id del usuario a eliminar: ');
-        const deletedUser = await userService.deleteUser(userId);
-        console.log(chalk.green('usuario eliminado:'), deletedUser || 'usuario no encontrado');
+        const userId = readlineSync.question('ID del usuario a eliminar: ');
+        await userService.deleteUser(userId);
+        console.log(chalk.green('Usuario eliminado exitosamente.'));
         break;
       }
       default:
-        console.log(chalk.red('opcion no valida.'));
+        console.log(chalk.red('Opcion no valida.'));
     }
   };
 
   const manageMedia = async () => {
-    console.log(chalk.bold.cyan('\n--- gestionar media ---'));
-    console.log('1. crear media');
-    console.log('2. ver toda la media');
-    const choice = readlineSync.question('elige una opcion: ');
+    console.log(chalk.bold.cyan('\n--- Gestionar Media ---'));
+    console.log('1. Crear Media');
+    console.log('2. Ver toda la Media');
+    const choice = readlineSync.question('Elige una opcion: ');
 
     switch (choice) {
-        case '1': {
-            const type = readlineSync.keyInSelect(['manga', 'series', 'movie', 'book'], 'selecciona el tipo de media:');
-            if (type === -1) { console.log(chalk.red('creacion cancelada.')); break; }
-            
-            const name = readlineSync.question('nombre: ');
-            const description = readlineSync.question('descripcion: ');
-            const link = readlineSync.question('enlace: ');
-            const platforms = readlineSync.question('plataformas (separadas por coma): ');
-            const genres = readlineSync.question('generos (separados por coma): ');
-            const status = readlineSync.question('estado (e.g., en emision, finalizado): ');
-            const rating = readlineSync.question('rating (1-10): ');
+      case '1': {
+        const types = ['Manga', 'Series', 'Movie', 'Book'];
+        const typeIndex = readlineSync.keyInSelect(types, 'Selecciona el tipo de media:');
+        if (typeIndex === -1) { console.log(chalk.red('Creacion cancelada.')); break; }
 
-            const mediaData = {
-                type: ['manga', 'series', 'movie', 'book'][type],
-                name,
-                description,
-                link,
-                platform: platforms.split(',').map(p => p.trim()),
-                genres: genres.split(',').map(g => g.trim()),
-                status,
-                rating: parseFloat(rating) || 0
-            };
+        const name = readlineSync.question('Nombre: ');
+        const description = readlineSync.question('Descripcion: ');
 
-            const newMedia = await mediaService.createMedia(mediaData);
-            console.log(chalk.green('media creada:'), newMedia);
-            break;
-        }
-        case '2': {
-            const allMedia = await mediaService.getAllMedia();
-            console.log(chalk.green('toda media:'), allMedia);
-            break;
-        }
-        default:
-            console.log(chalk.red('opcion no valida.'));
+        const mediaData = new CreateMediaDTO({
+          type: types[typeIndex],
+          name,
+          description
+        });
+
+        const newMedia = await mediaService.createMedia(mediaData);
+        console.log(chalk.green('Media creada:'), newMedia);
+        break;
+      }
+      case '2': {
+        const allMedia = await mediaService.getAllMedia();
+        console.log(chalk.green('Toda la media:'), allMedia);
+        break;
+      }
+      default:
+        console.log(chalk.red('Opcion no valida.'));
     }
   };
 
   const manageReviews = async () => {
-    console.log(chalk.bold.cyan('\n--- gestionar reviews ---'));
-    console.log('1. crear review');
-    console.log('2. ver reviews de una media');
-    const choice = readlineSync.question('elige una opcion: ');
+    console.log(chalk.bold.cyan('\n--- Gestionar Reseñas ---'));
+    console.log('1. Crear Reseña');
+    console.log('2. Ver Reseñas de una Media');
+    const choice = readlineSync.question('Elige una opcion: ');
 
     switch (choice) {
-        case '1': {
-            const userId = readlineSync.question('id del usuario: ');
-            const mediaId = readlineSync.question('id del media: ');
-            const content = readlineSync.question('contenido del review: ');
-            const rating = readlineSync.question('calificacion (1-10): ');
-            const newReview = await reviewService.createReview({ userId, mediaId, content, rating: parseInt(rating) });
-            console.log(chalk.green('review creado:'), newReview);
-            await activityLogService.createLog({
-                userId,
-                activityType: 'created_review',
-                type: 'created_review',
-                details: `el usuario ha creado un review para el media ${mediaId}`
-            });
-            console.log(chalk.blue('log de actividad creado.'));
-            break;
-        }
-        case '2': {
-            const mediaId = readlineSync.question('id del media: ');
-            const reviews = await reviewService.getReviewsByMediaId(mediaId);
-            console.log(chalk.green(`reviews para el media ${mediaId}:`), reviews);
-            break;
-        }
-        default:
-            console.log(chalk.red('opcion no valida.'));
+      case '1': {
+        const userId = readlineSync.question('ID del usuario que hace la reseña: ');
+        const mediaId = readlineSync.question('ID del medio a reseñar: ');
+        const rating = parseInt(readlineSync.question('Calificacion (1-10): '), 10);
+        const comment = readlineSync.question('Comentario (opcional): ');
+
+        const reviewData = new CreateReviewDTO({ userId, mediaId, rating, comment });
+        const newReview = await reviewService.createReview(reviewData);
+        console.log(chalk.green('Reseña creada:'), newReview);
+
+        const logData = new CreateActivityLogDTO({
+          userId,
+          actionType: 'REVIEW_CREATED',
+          payload: { mediaId: mediaId, rating: rating } 
+        });
+        await activityLogService.createLog(logData);
+        console.log(chalk.blue('Log de actividad registrado.'));
+        break;
+      }
+      case '2': {
+        const mediaId = readlineSync.question('ID del medio: ');
+        const reviews = await reviewService.getAllReviews({ mediaId }); 
+        console.log(chalk.green(`Reseñas para el medio ${mediaId}:`), reviews);
+        break;
+      }
+      default:
+        console.log(chalk.red('Opcion no valida.'));
     }
   };
 
   const viewActivityLogs = async () => {
-      const userId = readlineSync.question('id del usuario para ver sus logs: ');
-      const logs = await activityLogService.getLogsByUserId(userId);
-      console.log(chalk.green(`logs de actividad para el usuario ${userId}:`), logs);
+    const userId = readlineSync.question('ID del usuario para ver sus logs: ');
+    const logs = await activityLogService.getLogsByUserId(userId);
+    console.log(chalk.green(`Logs de actividad para el usuario ${userId}:`), logs);
   };
 
+  // --- Bucle Principal de la Aplicación ---
   let running = true;
   while (running) {
     const choice = showMainMenu();
@@ -198,15 +197,15 @@ const main = async () => {
           running = false;
           break;
         default:
-          console.log(chalk.red('opcion no valida. por favor, intenta de nuevo.'));
+          console.log(chalk.red('Opcion no valida. Por favor, intenta de nuevo.'));
       }
     } catch (error) {
-      console.error(chalk.red('ocurrio un error:'), error.message);
+      console.error(chalk.red('\n¡Ocurrio un error!:'), error.message);
     }
   }
 
   await mongoose.connection.close();
-  console.log(chalk.bold.yellow('conexion con la base de datos cerrada.'));
+  console.log(chalk.bold.yellow('Conexion con la base de datos cerrada. ¡Hasta luego!'));
 };
 
 main();

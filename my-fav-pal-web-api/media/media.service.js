@@ -1,26 +1,38 @@
-import Media from './entities/media.entity.js';
+import mediaDAO from './media.dao.js'; 
 
 export default class MediaService {
-  constructor() {}
 
-  async createMedia(mediaData) {
-    const media = new Media(mediaData);
-    return await media.save();
-  }
+    async createMedia(mediaData) {
+        const existingMedia = await mediaDAO.findByNameAndType(mediaData.name, mediaData.type);
+        if (existingMedia) {
+            const error = new Error(`El medio '${mediaData.name}' del tipo '${mediaData.type}' ya existe.`);
+            error.status = 409; 
+            throw error;
+        }
+        return mediaDAO.create(mediaData);
+    }
 
-  async getAllMedia(filter = {}) {
-    return await Media.find(filter);
-  }
+    async getAllMedia(filter = {}) {
+        return mediaDAO.findAll(filter);
+    }
 
-  async getMediaById(id) {
-    return await Media.findById(id);
-  }
+    async getMediaById(id) {
+        const media = await mediaDAO.findById(id);
+        if (!media) {
+            const error = new Error(`Medio con ID ${id} no encontrado.`);
+            error.status = 404;
+            throw error;
+        }
+        return media;
+    }
 
-  async updateMedia(id, updateData) {
-    return await Media.findByIdAndUpdate(id, updateData, { new: true });
-  }
+    async updateMedia(id, updateData) {
+        await this.getMediaById(id); 
+        return mediaDAO.update(id, updateData);
+    }
 
-  async deleteMedia(id) {
-    return await Media.findByIdAndDelete(id);
-  }
+    async deleteMedia(id) {
+        await this.getMediaById(id); 
+        return mediaDAO.delete(id);
+    }
 }
