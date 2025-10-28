@@ -175,7 +175,7 @@ const main = async () => {
     console.log(chalk.green(`Logs de actividad para el usuario ${userId}:`), logs);
   };
 
-  // --- Bucle Principal de la Aplicación ---
+  
   let running = true;
   while (running) {
     const choice = showMainMenu();

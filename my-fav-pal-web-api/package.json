@@ -1,9 +1,12 @@
 {
   "name": "my-fav-pal-web-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Una API web para gestionar listas, medios y reseñas.",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "cli": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,7 +15,11 @@
   "type": "module",
   "dependencies": {
     "chalk": "^5.3.0",
+    "express": "^4.19.2",
     "mongoose": "^8.19.0",
     "readline-sync": "^1.4.10"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
   }
 }
