@@ -1,4 +1,4 @@
-class CreateListDTO {
+export default class CreateListDTO { 
     constructor({ ownerId, name, description, visibility, items }) {
         this.ownerId = ownerId;
         this.name = name;
@@ -7,5 +7,3 @@ class CreateListDTO {
         this.items = items;
     }
 }
-
-module.exports = CreateListDTO;

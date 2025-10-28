@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+// lists/entities/list.entity.js
+import mongoose from 'mongoose';
 
 const ListItemSchema = new mongoose.Schema({
     mediaId: { 
@@ -30,9 +31,9 @@ const ListSchema = new mongoose.Schema({
     },
     items: [ListItemSchema],
 }, {
-    timestamps: true 
+    timestamps: true
 });
 
 const List = mongoose.model('List', ListSchema);
 
-module.exports = List;
+export default List; 

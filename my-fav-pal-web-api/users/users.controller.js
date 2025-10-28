@@ -1,6 +1,7 @@
+
 import UserService from './users.service.js';
-import CreateUserDTO from './dtos/users.createDTO.js';
-import UpdateUserDTO from './dtos/users.updateDTO.js';
+import CreateUserDTO from './dtos/user.createDTO.js'; 
+import UpdateUserDTO from './dtos/user.updateDTO.js';
 
 const userService = new UserService();
 

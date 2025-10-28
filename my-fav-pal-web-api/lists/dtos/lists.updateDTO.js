@@ -1,4 +1,4 @@
-class UpdateListDTO {
+export default class UpdateListDTO {
     constructor({ name, description, visibility, items }) {
         if (name !== undefined) this.name = name;
         if (description !== undefined) this.description = description;
@@ -6,5 +6,3 @@ class UpdateListDTO {
         if (items !== undefined) this.items = items;
     }
 }
-
-module.exports = UpdateListDTO;

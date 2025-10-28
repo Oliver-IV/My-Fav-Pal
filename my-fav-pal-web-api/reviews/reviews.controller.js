@@ -1,6 +1,6 @@
 import ReviewService from './reviews.service.js';
-import CreateReviewDTO from './dtos/review.createDTO.js';
-import UpdateReviewDTO from './dtos/review.updateDTO.js';
+import CreateReviewDTO from './dtos/reviews.createDTO.js';
+import UpdateReviewDTO from './dtos/reviews.updateDTO.js';
 
 const reviewService = new ReviewService();
 

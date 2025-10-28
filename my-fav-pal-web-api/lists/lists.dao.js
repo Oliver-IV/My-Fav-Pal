@@ -1,4 +1,4 @@
-const List = require('./entities/list.entity.js'); 
+import List from './entities/list.entity.js'; 
 
 class ListDAO {
     findAll() {
@@ -23,4 +23,4 @@ class ListDAO {
     }
 }
 
-module.exports = new ListDAO();
+export default new ListDAO(); 

@@ -6,7 +6,7 @@ import {
     getMediaById,
     updateMedia,
     deleteMedia
-} from '../media.controller.js';
+} from './media.controller.js';
 
 const router = express.Router();
 

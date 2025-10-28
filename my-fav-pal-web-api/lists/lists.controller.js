@@ -1,8 +1,10 @@
-const listService = require('./lists.service');
-const CreateListDTO = require('./dtos/lists.createDTO.js'); 
-const UpdateListDTO = require('./dtos/lists.updateDTO.js'); 
+import listService from './lists.service.js'; 
+import CreateListDTO from './dtos/lists.createDTO.js';
+import UpdateListDTO from './dtos/lists.updateDTO.js';
 
-exports.getLists = async (req, res) => {
+
+
+export const getLists = async (req, res) => {
     try {
         const lists = await listService.getAllLists();
         res.status(200).json(lists);
@@ -11,7 +13,7 @@ exports.getLists = async (req, res) => {
     }
 };
 
-exports.getListById = async (req, res) => {
+export const getListById = async (req, res) => {
     try {
         const { id } = req.params;
         const list = await listService.getListById(id);
@@ -21,17 +23,17 @@ exports.getListById = async (req, res) => {
     }
 };
 
-exports.createList = async (req, res) => {
+export const createList = async (req, res) => {
     try {
         const createListDTO = new CreateListDTO(req.body);
         const newList = await listService.createList(createListDTO);
         res.status(201).json(newList);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(error.status || 400).json({ message: error.message });
     }
 };
 
-exports.updateList = async (req, res) => {
+export const updateList = async (req, res) => {
     try {
         const { id } = req.params;
         const updateListDTO = new UpdateListDTO(req.body);
@@ -42,7 +44,7 @@ exports.updateList = async (req, res) => {
     }
 };
 
-exports.deleteList = async (req, res) => {
+export const deleteList = async (req, res) => {
     try {
         const { id } = req.params;
         await listService.deleteList(id);

@@ -1,5 +1,4 @@
-
-const listDAO = require('./lists.dao');
+import listDAO from './lists.dao.js'; 
 
 class ListService {
     async getAllLists() {
@@ -15,20 +14,25 @@ class ListService {
         }
         return list;
     }
-    
-    async createList(listData) {
-        return listDAO.create(listData);
+
+    async createList(createListDTO) {
+        return listDAO.create(createListDTO);
     }
 
-    async updateList(id, updateData) {
-        await this.getListById(id); 
-        return listDAO.update(id, updateData);
+    async updateList(id, updateListDTO) {
+        await this.getListById(id);
+        return listDAO.update(id, updateListDTO);
     }
-    
+
     async deleteList(id) {
         await this.getListById(id);
-        return listDAO.delete(id);
+        const success = listDAO.delete(id);
+        if (!success) {
+            const error = new Error(`No se pudo eliminar la lista con ID ${id}.`);
+            error.status = 500;
+            throw error;
+        }
     }
 }
 
-module.exports = new ListService();
+export default new ListService(); 
