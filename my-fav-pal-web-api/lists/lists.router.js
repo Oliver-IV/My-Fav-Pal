@@ -1,6 +1,6 @@
 import express from 'express';
-import { getLists, getListById, createList, updateList, deleteList } from './lists.controller.js';
-import { protect } from '../middleware/auth.middleware.js'; 
+import * as listsController from './lists.controller.js'; 
+import { protect } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
