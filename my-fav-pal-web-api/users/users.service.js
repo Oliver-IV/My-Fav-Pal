@@ -1,17 +1,33 @@
 import userDAO from './users.dao.js';
 
 export default class UserService {
-    
+
     async createUser(userData) {
         const existingUser = await userDAO.findByEmail(userData.email);
         if (existingUser) {
             const error = new Error('El correo electrónico ya está en uso.');
-            error.status = 409; 
+            error.status = 409;
             throw error;
         }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(userData.password, salt);
         
-        return userDAO.create(userData);
+        return userDAO.create({ ...userData, password: hashedPassword });
     }
+
+   
+    async validateUser(email, password) {
+        const user = await userDAO.findByEmail(email);
+        if (!user) {
+            return null; 
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        return isMatch ? user : null;
+    }
+    
+
 
     async getAllUsers() {
         return userDAO.findAll();
