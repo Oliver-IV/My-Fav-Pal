@@ -1,36 +1,36 @@
-import authService from '../js/services/auth.service.js';
+import authService from "../js/services/auth.service.js"
 
 class Navbar extends HTMLElement {
   constructor() {
-    super();
-    this.user = null;
+    super()
+    this.user = null
   }
 
   connectedCallback() {
-    this.user = authService.getUser();
-    this.render();
-    
-    // Escuchar cambios de autenticación
-    window.addEventListener('auth-changed', () => {
-      this.user = authService.getUser();
-      this.render();
-    });
+    this.user = authService.getUser()
+    this.render()
+
+    window.addEventListener("auth-changed", () => {
+      this.user = authService.getUser()
+      this.render()
+    })
   }
 
   render() {
     this.innerHTML = `
       <style>
         nav {
-          background: linear-gradient(135deg, #1e293b, #334155);
+          background: #14181C;
           padding: 1rem 2rem;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
           position: sticky;
           top: 0;
           z-index: 100;
+          border-bottom: 1px solid rgba(71, 85, 105, 0.2);
         }
 
         .nav-container {
-          max-width: 1200px;
+          max-width: 1400px;
           margin: 0 auto;
           display: flex;
           justify-content: space-between;
@@ -39,13 +39,11 @@ class Navbar extends HTMLElement {
 
         .logo {
           font-size: 1.5rem;
-          font-weight: bold;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+          font-weight: 700;
+          color: #e2e8f0;
           cursor: pointer;
           user-select: none;
+          letter-spacing: 0.5px;
         }
 
         .nav-links {
@@ -55,19 +53,21 @@ class Navbar extends HTMLElement {
         }
 
         .nav-btn {
-          padding: 0.5rem 1rem;
-          border: none;
+          padding: 0.6rem 1.2rem;
+          border: 1px solid rgba(100, 116, 139, 0.3);
           border-radius: 8px;
-          background: rgba(99, 102, 241, 0.1);
-          color: #a5b4fc;
+          background: rgba(91, 95, 222, 0.1);
+          color: #cbd5e1;
           cursor: pointer;
           transition: all 0.3s ease;
           font-weight: 500;
+          font-size: 0.95rem;
         }
 
         .nav-btn:hover {
-          background: rgba(99, 102, 241, 0.2);
-          color: #c7d2fe;
+          background: rgba(91, 95, 222, 0.2);
+          color: #e2e8f0;
+          border-color: rgba(91, 95, 222, 0.5);
         }
 
         .user-info {
@@ -80,92 +80,106 @@ class Navbar extends HTMLElement {
           width: 40px;
           height: 40px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          background: #14181C;
+          border: 2px solid #475569;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: white;
-          font-weight: bold;
+          color: #FFFFFF;
+          font-weight: 700;
+          font-size: 0.9rem;
+        }
+
+        .avatar img {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
         }
 
         .welcome-text {
-          color: #94a3b8;
+          color: #cbd5e1;
+          font-size: 0.95rem;
         }
 
         @media (max-width: 768px) {
           .nav-container {
-            flex-direction: column;
+            flex-wrap: wrap;
             gap: 1rem;
           }
 
           .nav-links {
             width: 100%;
             justify-content: center;
+            flex-wrap: wrap;
+          }
+
+          .welcome-text {
+            display: none;
           }
         }
       </style>
 
       <nav>
         <div class="nav-container">
-          <div class="logo" onclick="window.router.navigate('${this.user ? '/home' : '/login'}')">
+          <div class="logo" onclick="window.router.navigate('${this.user ? "/home" : "/login"}')">
             🎬 My Fav Pal
           </div>
-          
           <div class="nav-links">
             ${this.user ? this.renderAuthenticatedNav() : this.renderGuestNav()}
           </div>
         </div>
       </nav>
-    `;
-
-    this.attachEventListeners();
+    `
+    this.attachEventListeners()
   }
 
   renderGuestNav() {
     return `
       <button class="nav-btn" data-action="login">Iniciar Sesión</button>
       <button class="nav-btn" data-action="register">Registrarse</button>
-    `;
+    `
   }
 
   renderAuthenticatedNav() {
     const initials = this.user.displayName
       ? this.user.displayName.charAt(0).toUpperCase()
-      : this.user.email.charAt(0).toUpperCase();
+      : this.user.email.charAt(0).toUpperCase()
 
     return `
       <div class="user-info">
-        <span class="welcome-text">Hola, ${this.user.displayName || 'Usuario'}</span>
-        ${this.user.avatarUrl 
-          ? `<img src="${this.user.avatarUrl}" alt="Avatar" class="avatar" />`
-          : `<div class="avatar">${initials}</div>`
+        <span class="welcome-text">Hola, ${this.user.displayName || "Usuario"}</span>
+        ${
+          this.user.avatarUrl
+            ? `<img src="${this.user.avatarUrl}" alt="Avatar" class="avatar" />`
+            : `<div class="avatar">${initials}</div>`
         }
         <button class="nav-btn" data-action="logout">Cerrar Sesión</button>
       </div>
-    `;
+    `
   }
 
   attachEventListeners() {
-    const buttons = this.querySelectorAll('[data-action]');
-    buttons.forEach(button => {
-      button.addEventListener('click', (e) => {
-        const action = e.target.dataset.action;
-        
-        switch(action) {
-          case 'login':
-            window.router.navigate('/login');
-            break;
-          case 'register':
-            window.router.navigate('/register');
-            break;
-          case 'logout':
-            authService.logout();
-            window.router.navigate('/login');
-            break;
+    const buttons = this.querySelectorAll("[data-action]")
+    buttons.forEach((button) => {
+      button.addEventListener("click", (e) => {
+        const action = e.target.dataset.action
+
+        switch (action) {
+          case "login":
+            window.router.navigate("/login")
+            break
+          case "register":
+            window.router.navigate("/register")
+            break
+          case "logout":
+            authService.logout()
+            window.router.navigate("/login")
+            break
         }
-      });
-    });
+      })
+    })
   }
 }
 
-customElements.define('app-navbar', Navbar);
+customElements.define("app-navbar", Navbar)

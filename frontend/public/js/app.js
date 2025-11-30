@@ -48,8 +48,19 @@ class Router {
       return;
     }
 
+    // Mostrar/ocultar navbar según autenticación
+    this.toggleNavbar();
+
     // Renderizar el componente
     this.render(component);
+  }
+
+  // Mostrar u ocultar el navbar según autenticación
+  toggleNavbar() {
+    const navbar = document.getElementById('navbar');
+    if (navbar) {
+      navbar.style.display = authService.isAuthenticated() ? 'block' : 'none';
+    }
   }
 
   // Renderizar el contenido en el div#app
