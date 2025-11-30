@@ -1,4 +1,3 @@
-// users/users.entity.js
 import mongoose from 'mongoose';
 
 const WatchlistItemSchema = new mongoose.Schema({
