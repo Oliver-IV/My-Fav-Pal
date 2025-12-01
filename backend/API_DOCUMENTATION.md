@@ -209,31 +209,72 @@ GET /api/users/:id
 
 ### Watchlist (Rutas Protegidas)
 
+**Nota:** Todas las rutas de watchlist requieren el header de autorización:
+```
+Authorization: Bearer <tu-token-jwt>
+```
+
 #### Obtener Watchlist
 ```http
-GET /api/users/me/watchlist
+GET /api/media/watchlist
 Authorization: Bearer <token>
+```
+
+**Respuesta exitosa (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "507f1f77bcf86cd799439011",
+      "mediaName": "Nombre de la Serie",
+      "type": "series",
+      "platform": "Netflix",
+      "status": "Watching",
+      "progress": {
+        "episode": 5,
+        "timestamp": "00:15:30"
+      },
+      "rating": 8.5,
+      "link": "https://...",
+      "addedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}
 ```
 
 #### Agregar Item a Watchlist
 ```http
-POST /api/users/me/watchlist
+POST /api/media/watchlist
 Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "mediaId": "507f1f77bcf86cd799439011",
   "mediaName": "Nombre de la Serie",
   "type": "series",
   "platform": "Netflix",
   "status": "Watching",
   "progress": {
     "episode": 5,
+    "chapter": 10,
     "timestamp": "00:15:30"
   },
-  "rating": 8.5
+  "rating": 8.5,
+  "link": "https://example.com/series"
 }
 ```
+
+**Campos requeridos:**
+- `mediaName` - Nombre del contenido
+- `type` - Tipo de contenido: `series`, `movie`, `manga`, `book`, `article`
+- `status` - Estado del contenido
+
+**Campos opcionales:**
+- `platform` - Plataforma (Netflix, Crunchyroll, etc.)
+- `progress` - Objeto con `episode`, `chapter`, y/o `timestamp`
+- `rating` - Calificación (0-10)
+- `link` - URL del contenido
+- `posterUrl` - URL de la imagen/poster
 
 **Valores válidos para `status`:**
 - `Watching`
@@ -242,9 +283,31 @@ Content-Type: application/json
 - `Dropped`
 - `Plan to Watch`
 
+**Respuesta exitosa (201):**
+```json
+{
+  "success": true,
+  "message": "Item agregado a watchlist",
+  "data": [
+    {
+      "_id": "507f1f77bcf86cd799439011",
+      "mediaName": "Nombre de la Serie",
+      "type": "series",
+      "platform": "Netflix",
+      "status": "Watching",
+      "progress": {
+        "episode": 5
+      },
+      "rating": 8.5,
+      "addedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}
+```
+
 #### Actualizar Item en Watchlist
 ```http
-PUT /api/users/me/watchlist/:itemId
+PUT /api/media/watchlist/:itemId
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -257,10 +320,53 @@ Content-Type: application/json
 }
 ```
 
+**Parámetros:**
+- `itemId` - ID del item en la watchlist
+
+**Campos actualizables (todos opcionales):**
+- `mediaName` - Nuevo nombre
+- `type` - Nuevo tipo
+- `platform` - Nueva plataforma
+- `status` - Nuevo estado
+- `progress` - Nuevo progreso
+- `rating` - Nueva calificación
+- `link` - Nuevo enlace
+
+**Respuesta exitosa (200):**
+```json
+{
+  "success": true,
+  "message": "Item actualizado en watchlist",
+  "data": [
+    {
+      "_id": "507f1f77bcf86cd799439011",
+      "mediaName": "Nombre de la Serie",
+      "status": "Completed",
+      "rating": 9,
+      "progress": {
+        "episode": 10
+      }
+    }
+  ]
+}
+```
+
 #### Eliminar Item de Watchlist
 ```http
-DELETE /api/users/me/watchlist/:itemId
+DELETE /api/media/watchlist/:itemId
 Authorization: Bearer <token>
+```
+
+**Parámetros:**
+- `itemId` - ID del item en la watchlist
+
+**Respuesta exitosa (200):**
+```json
+{
+  "success": true,
+  "message": "Item eliminado de watchlist",
+  "data": []
+}
 ```
 
 ## 🔐 Autenticación
@@ -354,6 +460,431 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 ## 👥 Autor
 
 Oliver-IV - [@Oliver-IV](https://github.com/Oliver-IV)
+
+### Gestión de Listas (Lists)
+
+Las listas permiten a los usuarios crear colecciones personalizadas de contenido multimedia.
+
+#### Obtener Todas las Listas
+```http
+GET /api/lists
+```
+
+**Respuesta exitosa (200):**
+```json
+[
+  {
+    "id": "507f1f77bcf86cd799439011",
+    "ownerId": "507f1f77bcf86cd799439012",
+    "name": "Mis Favoritas de Ciencia Ficción",
+    "description": "Las mejores películas y series de ciencia ficción",
+    "visibility": "public",
+    "items": [
+      {
+        "mediaId": "507f1f77bcf86cd799439013"
+      }
+    ],
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+]
+```
+
+#### Obtener Lista por ID
+```http
+GET /api/lists/:id
+```
+
+**Parámetros:**
+- `id` - ID de la lista
+
+**Respuesta exitosa (200):**
+```json
+{
+  "id": "507f1f77bcf86cd799439011",
+  "ownerId": "507f1f77bcf86cd799439012",
+  "name": "Mis Favoritas de Ciencia Ficción",
+  "description": "Las mejores películas y series de ciencia ficción",
+  "visibility": "public",
+  "items": [
+    {
+      "mediaId": "507f1f77bcf86cd799439013"
+    }
+  ],
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+#### Crear Nueva Lista
+```http
+POST /api/lists
+Content-Type: application/json
+
+{
+  "ownerId": "507f1f77bcf86cd799439012",
+  "name": "Mis Favoritas de Ciencia Ficción",
+  "description": "Las mejores películas y series de ciencia ficción",
+  "visibility": "public",
+  "items": [
+    {
+      "mediaId": "507f1f77bcf86cd799439013"
+    }
+  ]
+}
+```
+
+**Campos requeridos:**
+- `ownerId` - ID del usuario propietario
+- `name` - Nombre de la lista
+
+**Campos opcionales:**
+- `description` - Descripción de la lista
+- `visibility` - Visibilidad: `public` o `private` (default: `private`)
+- `items` - Array de items (cada item contiene `mediaId`)
+
+**Respuesta exitosa (201):**
+```json
+{
+  "id": "507f1f77bcf86cd799439011",
+  "ownerId": "507f1f77bcf86cd799439012",
+  "name": "Mis Favoritas de Ciencia Ficción",
+  "description": "Las mejores películas y series de ciencia ficción",
+  "visibility": "public",
+  "items": [
+    {
+      "mediaId": "507f1f77bcf86cd799439013"
+    }
+  ],
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+#### Actualizar Lista
+```http
+PUT /api/lists/:id
+Content-Type: application/json
+
+{
+  "name": "Mis Favoritas de Sci-Fi",
+  "description": "Colección actualizada",
+  "visibility": "private",
+  "items": [
+    {
+      "mediaId": "507f1f77bcf86cd799439013"
+    },
+    {
+      "mediaId": "507f1f77bcf86cd799439014"
+    }
+  ]
+}
+```
+
+**Parámetros:**
+- `id` - ID de la lista
+
+**Campos opcionales (solo se actualizan los campos proporcionados):**
+- `name` - Nuevo nombre
+- `description` - Nueva descripción
+- `visibility` - Nueva visibilidad
+- `items` - Nuevos items
+
+**Respuesta exitosa (200):**
+```json
+{
+  "id": "507f1f77bcf86cd799439011",
+  "ownerId": "507f1f77bcf86cd799439012",
+  "name": "Mis Favoritas de Sci-Fi",
+  "description": "Colección actualizada",
+  "visibility": "private",
+  "items": [
+    {
+      "mediaId": "507f1f77bcf86cd799439013"
+    },
+    {
+      "mediaId": "507f1f77bcf86cd799439014"
+    }
+  ],
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T12:00:00.000Z"
+}
+```
+
+#### Eliminar Lista
+```http
+DELETE /api/lists/:id
+```
+
+**Parámetros:**
+- `id` - ID de la lista
+
+**Respuesta exitosa (204):**
+Sin contenido (No Content)
+
+## 🧪 Pruebas con cURL - Listas
+
+### Crear una lista
+```bash
+curl -X POST http://localhost:3000/api/lists \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ownerId": "507f1f77bcf86cd799439012",
+    "name": "Mis Favoritas",
+    "description": "Mi colección personal",
+    "visibility": "public"
+  }'
+```
+
+### Obtener todas las listas
+```bash
+curl -X GET http://localhost:3000/api/lists
+```
+
+### Obtener una lista específica
+```bash
+curl -X GET http://localhost:3000/api/lists/507f1f77bcf86cd799439011
+```
+
+### Actualizar una lista
+```bash
+curl -X PUT http://localhost:3000/api/lists/507f1f77bcf86cd799439011 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Nuevo Nombre",
+    "visibility": "private"
+  }'
+```
+
+### Eliminar una lista
+```bash
+curl -X DELETE http://localhost:3000/api/lists/507f1f77bcf86cd799439011
+```
+
+## 🎬 Gestión de Watchlist (Media)
+
+La watchlist permite a los usuarios hacer seguimiento de películas, series, manga, libros y otros contenidos multimedia.
+
+### Obtener Watchlist del Usuario
+
+```http
+GET /api/media/watchlist
+Authorization: Bearer <token>
+```
+
+**Respuesta exitosa (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "507f1f77bcf86cd799439015",
+      "mediaName": "Attack on Titan",
+      "type": "series",
+      "platform": "Crunchyroll",
+      "link": "https://crunchyroll.com/attack-on-titan",
+      "status": "Watching",
+      "progress": {
+        "episode": 15,
+        "timestamp": "00:12:30"
+      },
+      "rating": 9.5,
+      "posterUrl": "https://example.com/poster.jpg",
+      "updatedAt": "2024-01-15T10:30:00.000Z"
+    }
+  ]
+}
+```
+
+### Agregar Item a Watchlist
+
+```http
+POST /api/media/watchlist
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "mediaName": "Attack on Titan",
+  "type": "series",
+  "platform": "Crunchyroll",
+  "link": "https://crunchyroll.com/attack-on-titan",
+  "status": "Watching",
+  "progress": {
+    "episode": 15,
+    "timestamp": "00:12:30"
+  },
+  "rating": 9.5,
+  "posterUrl": "https://example.com/poster.jpg"
+}
+```
+
+**Campos requeridos:**
+- `mediaName` - Nombre del contenido
+- `type` - Tipo de contenido: `series`, `movie`, `manga`, `book`, `article`
+- `status` - Estado: `Watching`, `Completed`, `On-Hold`, `Dropped`, `Plan to Watch`
+
+**Campos opcionales:**
+- `platform` - Plataforma donde se consume (Netflix, Crunchyroll, etc.)
+- `link` - URL externa del contenido
+- `progress` - Objeto con progreso:
+  - `episode` - Episodio actual
+  - `chapter` - Capítulo actual (para manga/libros)
+  - `page` - Página actual
+  - `timestamp` - Timestamp del video (formato: "HH:MM:SS")
+- `rating` - Calificación personal (0-10)
+- `posterUrl` - URL de la imagen/poster
+- `lastUrl` - Última URL visitada
+- `reviewId` - ID de la reseña asociada
+
+**Respuesta exitosa (201):**
+```json
+{
+  "success": true,
+  "message": "Item agregado a watchlist",
+  "data": [
+    {
+      "_id": "507f1f77bcf86cd799439015",
+      "mediaName": "Attack on Titan",
+      "type": "series",
+      "platform": "Crunchyroll",
+      "link": "https://crunchyroll.com/attack-on-titan",
+      "status": "Watching",
+      "progress": {
+        "episode": 15,
+        "timestamp": "00:12:30"
+      },
+      "rating": 9.5,
+      "posterUrl": "https://example.com/poster.jpg",
+      "updatedAt": "2024-01-15T10:30:00.000Z"
+    }
+  ]
+}
+```
+
+### Actualizar Item en Watchlist
+
+```http
+PUT /api/media/watchlist/:itemId
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "status": "Completed",
+  "progress": {
+    "episode": 25
+  },
+  "rating": 10
+}
+```
+
+**Parámetros:**
+- `itemId` - ID del item en la watchlist
+
+**Campos actualizables (todos opcionales):**
+- Cualquier campo del item puede ser actualizado
+
+**Respuesta exitosa (200):**
+```json
+{
+  "success": true,
+  "message": "Item actualizado en watchlist",
+  "data": [...]
+}
+```
+
+### Eliminar Item de Watchlist
+
+```http
+DELETE /api/media/watchlist/:itemId
+Authorization: Bearer <token>
+```
+
+**Parámetros:**
+- `itemId` - ID del item en la watchlist
+
+**Respuesta exitosa (200):**
+```json
+{
+  "success": true,
+  "message": "Item eliminado de watchlist",
+  "data": [...]
+}
+```
+
+## 🧪 Pruebas con cURL - Watchlist
+
+### Obtener watchlist
+```bash
+curl -X GET http://localhost:3000/api/media/watchlist \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+### Agregar item a watchlist
+```bash
+curl -X POST http://localhost:3000/api/media/watchlist \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "mediaName": "Attack on Titan",
+    "type": "series",
+    "platform": "Crunchyroll",
+    "status": "Watching",
+    "progress": {
+      "episode": 15
+    },
+    "rating": 9.5
+  }'
+```
+
+### Actualizar item en watchlist
+```bash
+curl -X PUT http://localhost:3000/api/media/watchlist/ITEM_ID \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "Completed",
+    "rating": 10
+  }'
+```
+
+### Eliminar item de watchlist
+```bash
+curl -X DELETE http://localhost:3000/api/media/watchlist/ITEM_ID \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+## 📋 Endpoints Disponibles
+
+### Usuarios (`/api/users`)
+- `POST /register` - Registrar usuario
+- `POST /login` - Iniciar sesión
+- `GET /` - Obtener todos los usuarios
+- `GET /:id` - Obtener usuario por ID
+- `GET /me/profile` - Obtener perfil (protegido)
+- `PUT /me/profile` - Actualizar perfil (protegido)
+- `POST /me/change-password` - Cambiar contraseña (protegido)
+- `DELETE /me/account` - Eliminar cuenta (protegido)
+
+### Media y Watchlist (`/api/media`)
+- `GET /watchlist` - Obtener watchlist del usuario (protegido)
+- `POST /watchlist` - Agregar item a watchlist (protegido)
+- `PUT /watchlist/:itemId` - Actualizar item en watchlist (protegido)
+- `DELETE /watchlist/:itemId` - Eliminar item de watchlist (protegido)
+
+### Listas (`/api/lists`)
+- `GET /` - Obtener todas las listas
+- `GET /:id` - Obtener lista por ID
+- `POST /` - Crear nueva lista
+- `PUT /:id` - Actualizar lista
+- `DELETE /:id` - Eliminar lista
+
+### Media - Watchlist (`/api/media`)
+- `GET /watchlist` - Obtener watchlist del usuario (protegido)
+- `POST /watchlist` - Agregar item a watchlist (protegido)
+- `PUT /watchlist/:itemId` - Actualizar item en watchlist (protegido)
+- `DELETE /watchlist/:itemId` - Eliminar item de watchlist (protegido)
+
+**Nota:** Los módulos de Reviews y Activity Logs están en desarrollo y serán documentados próximamente.
 
 ## 🐛 Reportar Bugs
 

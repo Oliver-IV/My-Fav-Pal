@@ -108,12 +108,12 @@ export class UserResponseDTO {
 // DTO para item de watchlist
 export class WatchlistItemDTO {
   constructor(data) {
-    this.mediaId = data.mediaId;
     this.mediaName = data.mediaName;
     this.type = data.type;
     this.platform = data.platform;
     this.progress = data.progress;
     this.lastUrl = data.lastUrl;
+    this.link = data.link;
     this.status = data.status;
     this.rating = data.rating;
     this.reviewId = data.reviewId;
@@ -121,10 +121,6 @@ export class WatchlistItemDTO {
 
   validate() {
     const errors = [];
-
-    if (!this.mediaId) {
-      errors.push('mediaId es requerido');
-    }
 
     if (!this.mediaName) {
       errors.push('mediaName es requerido');

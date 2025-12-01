@@ -31,13 +31,21 @@ class Router {
     // Obtener el componente para esta ruta
     let component = this.routes[path];
 
+    // Manejar rutas dinámicas como /media/:id
+    if (!component && path.startsWith('/media/')) {
+      const mediaId = path.split('/media/')[1];
+      const mediaDetailElement = document.createElement('media-detail-view');
+      mediaDetailElement.setAttribute('media-id', mediaId);
+      component = mediaDetailElement;
+    }
+
     // Si no existe la ruta, usar la página de inicio o 404
     if (!component) {
       component = this.routes['/'] || '<h1>404 - Página no encontrada</h1>';
     }
 
     // Verificar autenticación para rutas protegidas
-    if (path === '/home' && !authService.isAuthenticated()) {
+    if ((path === '/home' || path.startsWith('/media/')) && !authService.isAuthenticated()) {
       this.navigate('/login');
       return;
     }

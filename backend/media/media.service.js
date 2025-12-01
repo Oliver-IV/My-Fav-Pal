@@ -1,26 +1,58 @@
-import Media from './entities/media.entity.js';
+import User from '../users/entities/user.entity.js';
 
 export default class MediaService {
   constructor() {}
 
-  async createMedia(mediaData) {
-    const media = new Media(mediaData);
-    return await media.save();
+  // Obtener watchlist de un usuario
+  async getWatchlist(userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
+    return user.watchlist;
   }
 
-  async getAllMedia(filter = {}) {
-    return await Media.find(filter);
+  // Agregar item a watchlist
+  async addToWatchlist(userId, watchlistItem) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    user.watchlist.push(watchlistItem);
+    await user.save();
+
+    return user.watchlist;
   }
 
-  async getMediaById(id) {
-    return await Media.findById(id);
+  // Actualizar item en watchlist
+  async updateWatchlistItem(userId, itemId, updateData) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    const item = user.watchlist.id(itemId);
+    if (!item) {
+      throw new Error('Item no encontrado en watchlist');
+    }
+
+    Object.assign(item, updateData);
+    await user.save();
+
+    return user.watchlist;
   }
 
-  async updateMedia(id, updateData) {
-    return await Media.findByIdAndUpdate(id, updateData, { new: true });
-  }
+  // Eliminar item de watchlist
+  async removeFromWatchlist(userId, itemId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
 
-  async deleteMedia(id) {
-    return await Media.findByIdAndDelete(id);
+    user.watchlist.pull(itemId);
+    await user.save();
+
+    return user.watchlist;
   }
 }

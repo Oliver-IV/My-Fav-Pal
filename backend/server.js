@@ -5,6 +5,7 @@ import connectDB from './utils/db.js';
 import { PORT } from './utils/configs.js';
 
 import usersRouter from './users/users.router.js';
+import mediaRouter from './media/media.router.js';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/users', usersRouter);
+app.use('/api/media', mediaRouter);
 
 app.get('/', (req, res) => {
   res.json({
@@ -22,6 +24,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       users: '/api/users',
+      media: '/api/media',
     },
   });
 });

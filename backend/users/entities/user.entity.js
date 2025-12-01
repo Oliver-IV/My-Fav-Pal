@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 
 const WatchlistItemSchema = new mongoose.Schema({
-  mediaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Media', required: true },
   mediaName: { type: String, required: true }, 
   type: { type: String, required: true },      
   platform: String,                           
@@ -11,10 +10,11 @@ const WatchlistItemSchema = new mongoose.Schema({
     page: Number,
     timestamp: String,
   },
+  link: String,  // URL externa del contenido
   lastUrl: String,
   status: { type: String, required: true, enum: ['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch'] },
   rating: Number,
-  reviewId: { type: mongoose.Schema.Types.ObjectId, ref: 'Review' },
+  posterUrl: String,  // URL de la imagen/poster
   updatedAt: { type: Date, default: Date.now },
 });
 
@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema({
   displayName: { type: String, required: true },
   avatarUrl: String,
   watchlist: [WatchlistItemSchema], 
-  waitlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Media' }], 
+  waitlist: [WatchlistItemSchema], // Mismo schema que watchlist
   lists: [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }],
   createdAt: { type: Date, default: Date.now },
 });

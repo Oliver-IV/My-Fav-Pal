@@ -226,98 +226,6 @@ export const getUserById = async (req, res) => {
   }
 };
 
-// --- WATCHLIST ENDPOINTS ---
-
-// Obtener watchlist del usuario autenticado
-export const getWatchlist = async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const watchlist = await userService.getWatchlist(userId);
-
-    res.status(200).json({
-      success: true,
-      data: watchlist,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// Agregar item a watchlist
-export const addToWatchlist = async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const watchlistItemDTO = new WatchlistItemDTO(req.body);
-    const errors = watchlistItemDTO.validate();
-
-    if (errors.length > 0) {
-      return res.status(400).json({
-        success: false,
-        errors,
-      });
-    }
-
-    const watchlist = await userService.addToWatchlist(userId, watchlistItemDTO);
-
-    res.status(201).json({
-      success: true,
-      message: 'Item agregado a watchlist',
-      data: watchlist,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// Actualizar item en watchlist
-export const updateWatchlistItem = async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const { itemId } = req.params;
-    const updateData = req.body;
-
-    const watchlist = await userService.updateWatchlistItem(userId, itemId, updateData);
-
-    res.status(200).json({
-      success: true,
-      message: 'Item actualizado en watchlist',
-      data: watchlist,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// Eliminar item de watchlist
-export const removeFromWatchlist = async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const { itemId } = req.params;
-
-    const watchlist = await userService.removeFromWatchlist(userId, itemId);
-
-    res.status(200).json({
-      success: true,
-      message: 'Item eliminado de watchlist',
-      data: watchlist,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
 export default {
   register,
   login,
@@ -327,8 +235,4 @@ export default {
   deleteAccount,
   getAllUsers,
   getUserById,
-  getWatchlist,
-  addToWatchlist,
-  updateWatchlistItem,
-  removeFromWatchlist,
 };
