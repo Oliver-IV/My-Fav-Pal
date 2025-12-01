@@ -116,6 +116,7 @@ export class WatchlistItemDTO {
     this.link = data.link;
     this.status = data.status;
     this.rating = data.rating;
+    this.posterUrl = data.posterUrl;
     this.reviewId = data.reviewId;
   }
 
@@ -137,6 +138,15 @@ export class WatchlistItemDTO {
     const validStatuses = ['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch'];
     if (this.status && !validStatuses.includes(this.status)) {
       errors.push(`status debe ser uno de: ${validStatuses.join(', ')}`);
+    }
+
+    // Validar que posterUrl sea una URL válida si está presente
+    if (this.posterUrl && this.posterUrl.trim()) {
+      try {
+        new URL(this.posterUrl);
+      } catch (e) {
+        errors.push('posterUrl debe ser una URL válida');
+      }
     }
 
     return errors;

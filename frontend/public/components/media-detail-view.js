@@ -1,4 +1,5 @@
 import authService from '../js/services/auth.service.js';
+import { extractProgressFromForm, renderProgressFields, formatProgress } from '../js/utils/progress-fields.js';
 
 class MediaDetailView extends HTMLElement {
   constructor() {
@@ -40,22 +41,18 @@ class MediaDetailView extends HTMLElement {
     e.preventDefault();
     const formData = new FormData(e.target);
     const submitBtn = this.querySelector('#submitBtn');
+    const mediaType = formData.get('type');
     
     const updateData = {
       mediaName: formData.get('mediaName'),
-      type: formData.get('type'),
+      type: mediaType,
       platform: formData.get('platform'),
       status: formData.get('status'),
       rating: parseFloat(formData.get('rating')) || undefined,
       link: formData.get('link') || undefined,
-      progress: {}
+      posterUrl: formData.get('posterUrl') || undefined,
+      progress: extractProgressFromForm(formData, mediaType)
     };
-
-    const episode = formData.get('episode');
-    const chapter = formData.get('chapter');
-    
-    if (episode) updateData.progress.episode = parseInt(episode);
-    if (chapter) updateData.progress.chapter = parseInt(chapter);
 
     try {
       submitBtn.disabled = true;
@@ -448,13 +445,10 @@ class MediaDetailView extends HTMLElement {
                 </div>
               ` : ''}
               
-              ${this.mediaItem.progress?.episode || this.mediaItem.progress?.chapter ? `
+              ${this.mediaItem.progress && Object.keys(this.mediaItem.progress).length > 0 ? `
                 <div class="meta-item">
                   <span class="meta-label">Progress</span>
-                  <span class="meta-value">
-                    ${this.mediaItem.progress.episode ? `Episode ${this.mediaItem.progress.episode}` : ''}
-                    ${this.mediaItem.progress.chapter ? `Chapter ${this.mediaItem.progress.chapter}` : ''}
-                  </span>
+                  <span class="meta-value">${formatProgress(this.mediaItem.progress, this.mediaItem.type)}</span>
                 </div>
               ` : ''}
               
@@ -466,8 +460,8 @@ class MediaDetailView extends HTMLElement {
               ` : ''}
             </div>
 
-            <div class="meta-item">
-              <span class="meta-label">Status</span>
+            <div>
+              <span class="meta-label" style="display: block; margin-bottom: 0.5rem;">Status</span>
               <span class="status-badge-large status-${(this.mediaItem.status || 'watching').toLowerCase().replace(/\s+/g, '-')}">
                 ${this.mediaItem.status || 'Watching'}
               </span>
@@ -485,7 +479,7 @@ class MediaDetailView extends HTMLElement {
             ` : ''}
 
             <div class="action-buttons">
-              <button class="btn-edit" id="editBtn">Edit Details</button>
+              <button class="btn-edit" id="editBtn">Edit Media</button>
               <button class="btn-delete" id="deleteBtn">Delete</button>
             </div>
           </div>
@@ -531,6 +525,11 @@ class MediaDetailView extends HTMLElement {
             </div>
 
             <div class="form-group">
+              <label for="posterUrl">Cover Picture URL</label>
+              <input type="url" id="posterUrl" name="posterUrl" value="${this.mediaItem.posterUrl || ''}" />
+            </div>
+
+            <div class="form-group">
               <label for="status">Status *</label>
               <select id="status" name="status" required>
                 <option value="Watching" ${this.mediaItem.status === 'Watching' ? 'selected' : ''}>Watching</option>
@@ -541,9 +540,9 @@ class MediaDetailView extends HTMLElement {
               </select>
             </div>
 
-            <div class="form-group">
-              <label for="episode">Episode/Chapter</label>
-              <input type="number" id="episode" name="episode" min="0" value="${this.mediaItem.progress?.episode || this.mediaItem.progress?.chapter || ''}" />
+            <div id="progressFieldsContainer">
+              <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500; font-size: 0.9rem;">Progress</label>
+              ${renderProgressFields(this.mediaItem.type, this.mediaItem.progress)}
             </div>
 
             <div class="form-group">
@@ -607,6 +606,21 @@ class MediaDetailView extends HTMLElement {
       editForm.addEventListener('submit', async (e) => {
         await this.handleUpdate(e);
       });
+      
+      // Listener para cambiar campos de progreso cuando cambia el tipo
+      const typeSelect = editForm.querySelector('#type');
+      if (typeSelect) {
+        typeSelect.addEventListener('change', (e) => {
+          const newType = e.target.value;
+          const container = editForm.querySelector('#progressFieldsContainer');
+          if (container) {
+            container.innerHTML = `
+              <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500; font-size: 0.9rem;">Progress</label>
+              ${renderProgressFields(newType, this.mediaItem.progress)}
+            `;
+          }
+        });
+      }
     }
   }
 }

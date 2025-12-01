@@ -1,4 +1,5 @@
 import authService from '../js/services/auth.service.js';
+import { extractProgressFromForm, renderProgressFields, formatProgress } from '../js/utils/progress-fields.js';
 
 class HomeView extends HTMLElement {
   constructor() {
@@ -7,6 +8,9 @@ class HomeView extends HTMLElement {
     this.watchlist = [];
     this.showAddModal = false;
     this.activeFilter = 'All';
+    this.searchQuery = '';
+    this.searchDebounceTimer = null;
+    this.selectedTypeForAdd = 'series';
   }
 
   async connectedCallback() {
@@ -392,7 +396,7 @@ class HomeView extends HTMLElement {
           
           <div class="search-filter-bar">
             <div class="search-box">
-              <input type="text" placeholder="Search your watchlist..." />
+              <input type="text" id="searchInput" placeholder="Search your watchlist..." value="${this.searchQuery}" />
             </div>
             <button class="filter-btn">Filters</button>
           </div>
@@ -429,12 +433,34 @@ class HomeView extends HTMLElement {
       });
     }
 
+    // Search input con debouncing
+    const searchInput = this.querySelector('#searchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.searchQuery = e.target.value;
+        
+        // Cancelar el timer anterior
+        if (this.searchDebounceTimer) {
+          clearTimeout(this.searchDebounceTimer);
+        }
+        
+        // Crear nuevo timer para actualizar después de 300ms sin escribir
+        this.searchDebounceTimer = setTimeout(() => {
+          this.updateTableOnly();
+        }, 300);
+      });
+    }
+
     // Tab filters
     const tabs = this.querySelectorAll('.tab[data-filter]');
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
-        this.activeFilter = tab.getAttribute('data-filter');
-        this.render();
+        const newFilter = tab.getAttribute('data-filter');
+        if (this.activeFilter !== newFilter) {
+          this.activeFilter = newFilter;
+          this.updateTabs();
+          this.updateTableOnly();
+        }
       });
     });
 
@@ -462,6 +488,21 @@ class HomeView extends HTMLElement {
         e.preventDefault();
         await this.handleAddItem(e);
       });
+      
+      // Listener para cambiar campos de progreso cuando cambia el tipo
+      const typeSelect = addForm.querySelector('#type');
+      if (typeSelect) {
+        typeSelect.addEventListener('change', (e) => {
+          this.selectedTypeForAdd = e.target.value;
+          const container = addForm.querySelector('#progressFieldsContainer');
+          if (container) {
+            container.innerHTML = `
+              <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500; font-size: 0.9rem;">Progress</label>
+              ${renderProgressFields(this.selectedTypeForAdd)}
+            `;
+          }
+        });
+      }
     }
 
     // Row click handlers
@@ -474,25 +515,48 @@ class HomeView extends HTMLElement {
     });
   }
 
+  updateTableOnly() {
+    const tableContainer = this.querySelector('.watchlist-table');
+    if (tableContainer) {
+      tableContainer.innerHTML = this.renderWatchlistTable();
+      
+      const rows = this.querySelectorAll('tbody tr[data-media-id]');
+      rows.forEach(row => {
+        row.addEventListener('click', () => {
+          const mediaId = row.getAttribute('data-media-id');
+          window.router.navigate(`/media/${mediaId}`);
+        });
+      });
+    }
+  }
+
+  updateTabs() {
+    const tabs = this.querySelectorAll('.tab[data-filter]');
+    tabs.forEach(tab => {
+      const filter = tab.getAttribute('data-filter');
+      if (filter === this.activeFilter) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+  }
+
   async handleAddItem(e) {
     const formData = new FormData(e.target);
     const submitBtn = this.querySelector('#submitBtn');
+    const mediaType = formData.get('type');
     
     const data = {
       mediaName: formData.get('mediaName'),
-      type: formData.get('type'),
+      type: mediaType,
       platform: formData.get('platform'),
       status: formData.get('status'),
       rating: parseFloat(formData.get('rating')) || undefined,
       link: formData.get('link') || undefined,
-      progress: {}
+      posterUrl: formData.get('posterUrl') || undefined,
+      progress: extractProgressFromForm(formData, mediaType)
     };
-
-    const episode = formData.get('episode');
-    const chapter = formData.get('chapter');
-    
-    if (episode) data.progress.episode = parseInt(episode);
-    if (chapter) data.progress.chapter = parseInt(chapter);
 
     try {
       submitBtn.disabled = true;
@@ -542,11 +606,11 @@ class HomeView extends HTMLElement {
               <label for="type">Type *</label>
               <select id="type" name="type" required>
                 <option value="">Select type</option>
-                <option value="series">Series</option>
-                <option value="movie">Movie</option>
-                <option value="manga">Manga</option>
-                <option value="book">Book</option>
-                <option value="article">Article</option>
+                <option value="series" ${this.selectedTypeForAdd === 'series' ? 'selected' : ''}>Series</option>
+                <option value="movie" ${this.selectedTypeForAdd === 'movie' ? 'selected' : ''}>Movie</option>
+                <option value="manga" ${this.selectedTypeForAdd === 'manga' ? 'selected' : ''}>Manga</option>
+                <option value="book" ${this.selectedTypeForAdd === 'book' ? 'selected' : ''}>Book</option>
+                <option value="article" ${this.selectedTypeForAdd === 'article' ? 'selected' : ''}>Article</option>
               </select>
             </div>
 
@@ -561,6 +625,11 @@ class HomeView extends HTMLElement {
             </div>
 
             <div class="form-group">
+              <label for="posterUrl">Cover Picture URL</label>
+              <input type="url" id="posterUrl" name="posterUrl" placeholder="https://..." />
+            </div>
+
+            <div class="form-group">
               <label for="status">Status *</label>
               <select id="status" name="status" required>
                 <option value="Watching">Watching</option>
@@ -571,9 +640,9 @@ class HomeView extends HTMLElement {
               </select>
             </div>
 
-            <div class="form-group">
-              <label for="episode">Episode/Chapter</label>
-              <input type="number" id="episode" name="episode" min="0" placeholder="Current episode" />
+            <div id="progressFieldsContainer">
+              <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500; font-size: 0.9rem;">Progress</label>
+              ${renderProgressFields(this.selectedTypeForAdd)}
             </div>
 
             <div class="form-group">
@@ -592,14 +661,30 @@ class HomeView extends HTMLElement {
   }
 
   renderWatchlistTable() {
-    // Filtrar watchlist según el filtro activo
-    const filteredWatchlist = this.activeFilter === 'All' 
+    // Filtrar watchlist según el filtro activo y búsqueda
+    let filteredWatchlist = this.activeFilter === 'All' 
       ? this.watchlist 
       : this.watchlist.filter(item => {
           const itemType = (item.type || '').toLowerCase();
           const filterType = this.activeFilter.toLowerCase();
           return itemType === filterType;
         });
+
+    // Aplicar filtro de búsqueda
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase();
+      filteredWatchlist = filteredWatchlist.filter(item => {
+        const mediaName = (item.mediaName || '').toLowerCase();
+        const type = (item.type || '').toLowerCase();
+        const platform = (item.platform || '').toLowerCase();
+        const status = (item.status || '').toLowerCase();
+        
+        return mediaName.includes(query) || 
+               type.includes(query) || 
+               platform.includes(query) || 
+               status.includes(query);
+      });
+    }
 
     if (filteredWatchlist.length === 0) {
       return `
@@ -618,7 +703,7 @@ class HomeView extends HTMLElement {
             <th>Type</th>
             <th>Platform</th>
             <th>Link</th>
-            <th>Chapter</th>
+            <th>Progress</th>
             <th>Status</th>
             <th>Rating</th>
           </tr>
@@ -637,7 +722,7 @@ class HomeView extends HTMLElement {
               <td>
                 ${item.link ? `<a href="${item.link}" target="_blank" style="color: #60a5fa;">View</a>` : 'N/A'}
               </td>
-              <td>${item.progress?.episode || item.progress?.chapter || '-'}</td>
+              <td>${formatProgress(item.progress, item.type)}</td>
               <td>
                 <span class="status-badge status-${(item.status || 'ongoing').toLowerCase().replace(' ', '-')}">
                   ${item.status || 'Ongoing'}

@@ -5,10 +5,19 @@ const WatchlistItemSchema = new mongoose.Schema({
   type: { type: String, required: true },      
   platform: String,                           
   progress: {
-    chapter: Number,
+    // Series/Anime
+    season: Number,
     episode: Number,
+    // Manga/Comics
+    volume: Number,
+    chapter: Number,
+    // Books
     page: Number,
-    timestamp: String,
+    totalPages: Number,
+    // Movies
+    timestamp: String, // "01:23:45"
+    // Articles
+    percentage: Number, // 0-100
   },
   link: String,  // URL externa del contenido
   lastUrl: String,
