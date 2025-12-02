@@ -94,7 +94,7 @@ router.addRoute('/register', '<register-view></register-view>');
 router.addRoute('/home', '<home-view></home-view>');
 router.addRoute('/media/:id', (id) => `<media-detail-view media-id="${id}"></media-detail-view>`)
 router.addRoute('/lists', '<lists-view></lists-view>');
-
+router.addRoute('/profile', '<profile-view></profile-view>');
 // Exponer el router globalmente
 window.router = router;
 

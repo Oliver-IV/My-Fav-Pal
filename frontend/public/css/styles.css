@@ -274,3 +274,27 @@ body {
 .filter-btn:hover {
   background: #2c3440;
 }
+
+.profile-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.profile-card {
+  background: var(--surface);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.profile-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.profile-text {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
