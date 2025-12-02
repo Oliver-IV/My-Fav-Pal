@@ -1,34 +1,38 @@
+import List from './entities/list.entity.js';
 
-const listDAO = require('./lists.dao');
+export default class ListService {
+  async getListsByUserId(userId) {
+    if (!userId) {
+      throw new Error('User ID is required.');
+    }
+    console.log(`[Service] Ejecutando find({ ownerId: "${userId}" }) en la colección de listas.`);
+    return List.find({ ownerId: userId }).sort({ createdAt: -1 });
+  }
 
-class ListService {
-    async getAllLists() {
-        return listDAO.findAll();
-    }
+  async createList(listData, userId) {
+    const newList = new List({
+      ...listData,
+      user: userId, 
+    });
+    return newList.save();
+  }
 
-    async getListById(id) {
-        const list = await listDAO.findById(id);
-        if (!list) {
-            const error = new Error(`Lista con ID ${id} no encontrada.`);
-            error.status = 404;
-            throw error;
-        }
-        return list;
+  async updateList(listId, updateListData, userId) {
+    const list = await List.findOne({ _id: listId, user: userId });
+    if (!list) {
+      throw new Error('List not found or user does not have permission.');
     }
-    
-    async createList(listData) {
-        return listDAO.create(listData);
-    }
+    Object.assign(list, updateListData);
+    await list.save();
+    return list;
+  }
 
-    async updateList(id, updateData) {
-        await this.getListById(id); 
-        return listDAO.update(id, updateData);
+  async deleteList(listId, userId) {
+    const list = await List.findOne({ _id: listId, user: userId });
+    if (!list) {
+      throw new Error('List not found or user does not have permission.');
     }
-    
-    async deleteList(id) {
-        await this.getListById(id);
-        return listDAO.delete(id);
-    }
+    await List.findByIdAndDelete(listId);
+    return { message: 'List deleted successfully.' };
+  }
 }
-
-module.exports = new ListService();

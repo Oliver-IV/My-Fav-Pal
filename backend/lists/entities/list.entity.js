@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';   
 
 const ListItemSchema = new mongoose.Schema({
     mediaId: { 
@@ -35,4 +35,4 @@ const ListSchema = new mongoose.Schema({
 
 const List = mongoose.model('List', ListSchema);
 
-module.exports = List;
+export default List;

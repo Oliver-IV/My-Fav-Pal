@@ -1,53 +1,85 @@
-const listService = require('./lists.service');
-const CreateListDTO = require('./dtos/lists.createDTO.js'); 
-const UpdateListDTO = require('./dtos/lists.updateDTO.js'); 
+import ListService from './lists.service.js';
+import CreateListDTO from './dtos/lists.createDTO.js';
+import UpdateListDTO from './dtos/lists.updateDTO.js';
 
-exports.getLists = async (req, res) => {
-    try {
-        const lists = await listService.getAllLists();
-        res.status(200).json(lists);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+const listService = new ListService();
+
+export const getLists = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    console.log(`[Controller] Buscando listas para el usuario con ID: ${userId}`); // <-- LOG 1
+
+    const lists = await listService.getListsByUserId(userId);
+    console.log(`[Controller] Listas encontradas en la BD:`, lists); // <-- LOG 2
+
+    res.status(200).json({
+      success: true,
+      data: lists,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
-exports.getListById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const list = await listService.getListById(id);
-        res.status(200).json(list);
-    } catch (error) {
-        res.status(error.status || 500).json({ message: error.message });
+export const createList = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const createListDTO = new CreateListDTO(req.body);
+
+    if (!createListDTO.name) {
+      return res.status(400).json({ success: false, message: 'List name is required.' });
     }
+
+    const newList = await listService.createList(createListDTO, userId);
+    res.status(201).json({
+      success: true,
+      message: 'List created successfully',
+      data: newList,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
-exports.createList = async (req, res) => {
-    try {
-        const createListDTO = new CreateListDTO(req.body);
-        const newList = await listService.createList(createListDTO);
-        res.status(201).json(newList);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
+export const updateList = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+    const updateListDTO = new UpdateListDTO(req.body);
+
+    const updatedList = await listService.updateList(id, updateListDTO, userId);
+    res.status(200).json({
+      success: true,
+      message: 'List updated successfully',
+      data: updatedList,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
-exports.updateList = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updateListDTO = new UpdateListDTO(req.body);
-        const updatedList = await listService.updateList(id, updateListDTO);
-        res.status(200).json(updatedList);
-    } catch (error) {
-        res.status(error.status || 400).json({ message: error.message });
-    }
-};
-
-exports.deleteList = async (req, res) => {
-    try {
-        const { id } = req.params;
-        await listService.deleteList(id);
-        res.status(204).send();
-    } catch (error) {
-        res.status(error.status || 500).json({ message: error.message });
-    }
+export const deleteList = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+    await listService.deleteList(id, userId);
+    res.status(200).json({
+      success: true,
+      message: 'List deleted successfully',
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };

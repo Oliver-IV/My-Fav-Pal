@@ -7,4 +7,4 @@ class UpdateListDTO {
     }
 }
 
-module.exports = UpdateListDTO;
+export default UpdateListDTO;

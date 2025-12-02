@@ -8,4 +8,4 @@ class CreateListDTO {
     }
 }
 
-module.exports = CreateListDTO;
+export default CreateListDTO;

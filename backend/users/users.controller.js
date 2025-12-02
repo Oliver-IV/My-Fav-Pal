@@ -25,12 +25,14 @@ export const register = async (req, res) => {
 
     const result = await userService.register(registerDTO);
 
+    console.log(result) ;
     res.status(201).json({
       success: true,
       message: 'Usuario registrado exitosamente',
       data: result,
     });
   } catch (error) {
+    console.log(error) ;
     res.status(400).json({
       success: false,
       message: error.message,

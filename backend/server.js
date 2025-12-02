@@ -6,6 +6,7 @@ import { PORT } from './utils/configs.js';
 
 import usersRouter from './users/users.router.js';
 import mediaRouter from './media/media.router.js';
+import listsRouter from './lists/lists.router.js';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/users', usersRouter);
 app.use('/api/media', mediaRouter);
+app.use('/api/lists', listsRouter);
 
 app.get('/', (req, res) => {
   res.json({
@@ -25,6 +27,7 @@ app.get('/', (req, res) => {
     endpoints: {
       users: '/api/users',
       media: '/api/media',
+      lists: '/api/lists',
     },
   });
 });

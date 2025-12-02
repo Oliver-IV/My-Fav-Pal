@@ -45,7 +45,7 @@ class Router {
     }
 
     // Verificar autenticación para rutas protegidas
-    if ((path === '/home' || path.startsWith('/media/')) && !authService.isAuthenticated()) {
+    if ((path === '/home' || path.startsWith('/media/') || path.startsWith('/lists')) && !authService.isAuthenticated()) {
       this.navigate('/login');
       return;
     }
@@ -92,6 +92,8 @@ router.addRoute('/', '<login-view></login-view>');
 router.addRoute('/login', '<login-view></login-view>');
 router.addRoute('/register', '<register-view></register-view>');
 router.addRoute('/home', '<home-view></home-view>');
+router.addRoute('/media/:id', (id) => `<media-detail-view media-id="${id}"></media-detail-view>`)
+router.addRoute('/lists', '<lists-view></lists-view>');
 
 // Exponer el router globalmente
 window.router = router;
