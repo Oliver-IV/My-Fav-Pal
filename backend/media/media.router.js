@@ -4,13 +4,10 @@ import {
   addToWatchlist,
   updateWatchlistItem,
   removeFromWatchlist,
-  searchMedia, 
 } from './media.controller.js';
 import { authenticate } from '../utils/auth.middleware.js';
 
 const router = express.Router();
-
-router.get('/search', authenticate, searchMedia);
 
 router.get('/watchlist', authenticate, getWatchlist);
 router.post('/watchlist', authenticate, addToWatchlist);

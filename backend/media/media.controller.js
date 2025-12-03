@@ -3,16 +3,6 @@ import { WatchlistItemDTO } from '../users/dtos/user.dto.js';
 
 const mediaService = new MediaService();
 
-export const searchMedia = async (req, res) => {
-  try {
-    const query = req.query.q || '';
-    const results = await mediaService.searchMedia(query);
-    res.status(200).json({ success: true, data: results });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Error searching media', error: error.message });
-  }
-};
-
 export const getWatchlist = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -104,5 +94,4 @@ export default {
   addToWatchlist,
   updateWatchlistItem,
   removeFromWatchlist,
-  searchMedia, 
 };
