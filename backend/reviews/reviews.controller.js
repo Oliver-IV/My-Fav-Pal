@@ -1,6 +1,6 @@
 import Review from './entities/review.entity.js';
 import mongoose from 'mongoose';
-
+import Media from '../media/entities/media.entity.js';
 
 export const getReviewsByUserId = async (req, res) => {
     try {
@@ -9,10 +9,18 @@ export const getReviewsByUserId = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({ success: false, message: 'ID de usuario inválido.' });
         }
-        
+
+        // Ahora Media ya está importado correctamente, así que el modelo se registra.
+        // Podemos usar la variable 'Media' directamente en el populate.
+
         const reviews = await Review.find({ userId: userId })
-                                    .populate('mediaId', 'name type posterUrl') 
-                                    .lean(); 
+                                     .populate({
+                                         path: 'mediaId',
+                                         model: Media, // Usamos la clase importada
+                                         select: 'name type posterUrl'
+                                     })
+                                     .lean(); 
+
         if (!reviews || reviews.length === 0) {
             return res.status(200).json({ 
                 success: true, 
@@ -29,7 +37,7 @@ export const getReviewsByUserId = async (req, res) => {
 
     } catch (error) {
         console.error("Error al obtener reviews por usuario:", error);
-        res.status(500).json({ success: false, message: 'Error interno del servidor al buscar reviews.' });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 

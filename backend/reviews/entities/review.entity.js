@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const ReviewSchema = new mongoose.Schema({
   mediaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Media', required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
   rating: { type: Number, required: true, min: 1, max: 10 },
   title: String,
   body: String,
