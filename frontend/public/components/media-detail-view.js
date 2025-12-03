@@ -455,7 +455,7 @@ class MediaDetailView extends HTMLElement {
               ${this.mediaItem.rating ? `
                 <div class="meta-item">
                   <span class="meta-label">My rating</span>
-                  <span class="rating-large">${this.mediaItem.rating}/10</span>
+                  <span class="rating-large">${this.mediaItem.rating}/5</span>
                 </div>
               ` : ''}
             </div>
@@ -606,8 +606,7 @@ class MediaDetailView extends HTMLElement {
       editForm.addEventListener('submit', async (e) => {
         await this.handleUpdate(e);
       });
-      
-      // Listener para cambiar campos de progreso cuando cambia el tipo
+
       const typeSelect = editForm.querySelector('#type');
       if (typeSelect) {
         typeSelect.addEventListener('change', (e) => {

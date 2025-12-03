@@ -1,4 +1,4 @@
-// API Base URL - ajusta según tu configuración
+
 const API_URL = 'http://localhost:3000/api';
 
 class AuthService {
@@ -98,7 +98,6 @@ class AuthService {
     }
   }
 
-  // Obtener perfil del usuario
   async getProfile() {
     try {
       const response = await fetch(`${API_URL}/users/me/profile`, {
@@ -115,17 +114,27 @@ class AuthService {
         throw new Error(data.message || 'Error al obtener el perfil');
       }
 
-      // Actualizar datos del usuario en localStorage
-      localStorage.setItem(this.userKey, JSON.stringify(data.data));
+      const user = data.data;
+      const hasFavorites = user.favorites && Array.isArray(user.favorites);
+      const favCount = hasFavorites ? user.favorites.length : 0;
+      
+      console.log('------------------------------------------------');
+      console.log(' AUTH SERVICE (getProfile): Respuesta del Backend recibida.');
+      console.log(` ¿Contiene favoritos? ${hasFavorites ? 'Sí' : 'No'}`);
+      console.log(`Cantidad de favoritos: ${favCount}`);
+      console.log('Objeto User completo a guardar:', user);
+      console.log('------------------------------------------------');
+
+      localStorage.setItem(this.userKey, JSON.stringify(user));
 
       return data;
     } catch (error) {
+      console.error("Error en getProfile:", error);
       throw error;
     }
   }
 
-  // Actualizar perfil
-  async updateProfile(displayName, avatarUrl) {
+  async updateProfile(displayName, avatarUrl, city) {
     try {
       const response = await fetch(`${API_URL}/users/me/profile`, {
         method: 'PUT',
@@ -136,6 +145,7 @@ class AuthService {
         body: JSON.stringify({
           displayName,
           avatarUrl,
+          city, 
         }),
       });
 
@@ -154,7 +164,36 @@ class AuthService {
       throw error;
     }
   }
+
+
+  async updateFavorites(favoritesArray) {
+    try {
+      const response = await fetch(`${API_URL}/users/me/favorites`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.getToken()}`,
+        },
+        body: JSON.stringify({
+          favorites: favoritesArray,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al actualizar los favoritos');
+      }
+
+      localStorage.setItem(this.userKey, JSON.stringify(data.data));
+      window.dispatchEvent(new Event('auth-changed'));
+
+      return data;
+
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
-// Exportar instancia única del servicio
 export default new AuthService();

@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 
 const WatchlistItemSchema = new mongoose.Schema({
   mediaName: { type: String, required: true }, 
-  type: { type: String, required: true },      
-  platform: String,                           
+  type: { type: String, required: true },      
+  platform: String,                           
   progress: {
     // Series/Anime
     season: Number,
@@ -15,15 +15,14 @@ const WatchlistItemSchema = new mongoose.Schema({
     page: Number,
     totalPages: Number,
     // Movies
-    timestamp: String, // "01:23:45"
-    // Articles
-    percentage: Number, // 0-100
+    timestamp: String, 
+    percentage: Number, 
   },
-  link: String,  // URL externa del contenido
+  link: String, 
   lastUrl: String,
   status: { type: String, required: true, enum: ['Watching', 'Completed', 'On-Hold', 'Dropped', 'Plan to Watch'] },
   rating: Number,
-  posterUrl: String,  // URL de la imagen/poster
+  posterUrl: String, 
   updatedAt: { type: Date, default: Date.now },
 });
 
@@ -32,8 +31,13 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true },
   displayName: { type: String, required: true },
   avatarUrl: String,
+  
+  city: { type: String }, 
+  
+  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Media' }], 
+
   watchlist: [WatchlistItemSchema], 
-  waitlist: [WatchlistItemSchema], // Mismo schema que watchlist
+  waitlist: [WatchlistItemSchema], 
   lists: [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }],
   createdAt: { type: Date, default: Date.now },
 });
