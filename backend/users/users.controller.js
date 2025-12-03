@@ -5,7 +5,6 @@ import {
   UpdateUserDTO,
   ChangePasswordDTO,
   UserResponseDTO,
-  WatchlistItemDTO,
 } from './dtos/user.dto.js';
 
 const userService = new UserService();
@@ -25,14 +24,13 @@ export const register = async (req, res) => {
 
     const result = await userService.register(registerDTO);
 
-    console.log(result) ;
     res.status(201).json({
       success: true,
       message: 'Usuario registrado exitosamente',
       data: result,
     });
   } catch (error) {
-    console.log(error) ;
+    console.log(error);
     res.status(400).json({
       success: false,
       message: error.message,
@@ -68,10 +66,11 @@ export const login = async (req, res) => {
   }
 };
 
-// Obtener perfil del usuario autenticado
+
 export const getProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
+
     const user = await userService.getUserById(userId);
 
     if (!user) {
@@ -81,9 +80,16 @@ export const getProfile = async (req, res) => {
       });
     }
 
+    const userDto = new UserResponseDTO(user);
+
+    const responseData = {
+      ...userDto, 
+      favorites: user.favorites || [] 
+    };
+
     res.status(200).json({
       success: true,
-      data: new UserResponseDTO(user),
+      data: responseData,
     });
   } catch (error) {
     res.status(500).json({
@@ -93,10 +99,10 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// Actualizar perfil del usuario autenticado
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
+    
     const updateDTO = new UpdateUserDTO(req.body);
     const errors = updateDTO.validate();
 
@@ -116,10 +122,56 @@ export const updateProfile = async (req, res) => {
       });
     }
 
+    const userDto = new UserResponseDTO(updatedUser);
+    const responseData = {
+      ...userDto,
+      favorites: updatedUser.favorites || []
+    };
+
     res.status(200).json({
       success: true,
       message: 'Perfil actualizado exitosamente',
-      data: new UserResponseDTO(updatedUser),
+      data: responseData,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateFavorites = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { favorites } = req.body; 
+
+    if (!Array.isArray(favorites)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Los favoritos deben ser un array de IDs.',
+      });
+    }
+    
+    const updatedUser = await userService.updateFavorites(userId, favorites);
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado o error al actualizar favoritos.',
+      });
+    }
+
+    const userDto = new UserResponseDTO(updatedUser);
+    const responseData = {
+      ...userDto,
+      favorites: updatedUser.favorites || [] 
+    };
+
+    res.status(200).json({
+      success: true,
+      message: 'Favoritos actualizados exitosamente',
+      data: responseData,
     });
   } catch (error) {
     res.status(500).json({
@@ -161,7 +213,7 @@ export const changePassword = async (req, res) => {
   }
 };
 
-// Eliminar cuenta del usuario autenticado
+// Eliminar cuenta
 export const deleteAccount = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -186,7 +238,7 @@ export const deleteAccount = async (req, res) => {
   }
 };
 
-// Obtener todos los usuarios (puede ser protegida o pública según necesites)
+// Obtener todos los usuarios
 export const getAllUsers = async (req, res) => {
   try {
     const users = await userService.getAllUsers();
@@ -237,4 +289,5 @@ export default {
   deleteAccount,
   getAllUsers,
   getUserById,
+  updateFavorites,
 };

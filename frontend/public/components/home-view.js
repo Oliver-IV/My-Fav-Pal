@@ -433,25 +433,21 @@ class HomeView extends HTMLElement {
       });
     }
 
-    // Search input con debouncing
     const searchInput = this.querySelector('#searchInput');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
         this.searchQuery = e.target.value;
         
-        // Cancelar el timer anterior
         if (this.searchDebounceTimer) {
           clearTimeout(this.searchDebounceTimer);
         }
-        
-        // Crear nuevo timer para actualizar después de 300ms sin escribir
+
         this.searchDebounceTimer = setTimeout(() => {
           this.updateTableOnly();
         }, 300);
       });
     }
 
-    // Tab filters
     const tabs = this.querySelectorAll('.tab[data-filter]');
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
@@ -488,8 +484,7 @@ class HomeView extends HTMLElement {
         e.preventDefault();
         await this.handleAddItem(e);
       });
-      
-      // Listener para cambiar campos de progreso cuando cambia el tipo
+
       const typeSelect = addForm.querySelector('#type');
       if (typeSelect) {
         typeSelect.addEventListener('change', (e) => {
@@ -505,7 +500,6 @@ class HomeView extends HTMLElement {
       }
     }
 
-    // Row click handlers
     const rows = this.querySelectorAll('tbody tr[data-media-id]');
     rows.forEach(row => {
       row.addEventListener('click', () => {
@@ -647,7 +641,7 @@ class HomeView extends HTMLElement {
 
             <div class="form-group">
               <label for="rating">Rating (0-10)</label>
-              <input type="number" id="rating" name="rating" min="0" max="10" step="0.1" placeholder="8.5" />
+              <input type="number" id="rating" name="rating" min="0" max="5" step="0.1" placeholder="8.5" />
             </div>
 
             <div class="form-actions">
