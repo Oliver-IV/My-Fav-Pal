@@ -198,9 +198,7 @@ class ProfileView extends HTMLElement {
                     <div class="user-card">
                         <img class="user-img" src="${this.user.avatarUrl}" alt="Avatar" onerror="this.src='https://placehold.co/150'">
                         <h2>${this.user.displayName || "Usuario"}</h2>
-                       <p style="color: #ccc; margin: 5px 0;">
-    📍 ${localStorage.getItem('forced_city') || this.user.city || "Ciudad no especificada"}
-</p>
+                        <p style="color: #ccc; margin: 5px 0;">📍 ${this.user.city || "Ciudad no especificada"}</p>
                         <p style="font-size: 0.9em;">
                             <strong>${this.user.followers || 0}</strong> Followers | <strong>${this.user.following || 0}</strong> Following
                         </p>

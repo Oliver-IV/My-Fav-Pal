@@ -70,7 +70,7 @@ class EditProfileView extends HTMLElement {
         e.preventDefault();
         
         const displayName = this.querySelector('#displayName').value;
-        const city = this.querySelector('#nationality').value; // Valor del input
+        const city = this.querySelector('#nationality').value;
         const avatarUrl = this.user.avatarUrl || ''; 
         
         const btn = this.querySelector('.save-btn');
@@ -81,30 +81,16 @@ class EditProfileView extends HTMLElement {
             btn.disabled = true;
 
             await authService.updateProfile(displayName, avatarUrl, city);
+
             await authService.updateFavorites(this.selectedFavorites); 
 
-        
-            localStorage.setItem('forced_city', city);
+            await authService.getProfile();
             
-        
-            const currentUser = authService.getUser();
-            if (currentUser) {
-                currentUser.city = city;
-                currentUser.nationality = city;
-                localStorage.setItem('user_data', JSON.stringify(currentUser));
-            }
+            console.log('Perfil actualizado con éxito'); 
 
-
-            console.log('Perfil actualizado'); 
-
-            if (window.router && typeof window.router.navigate === 'function') {
-                window.router.navigate('/profile');
-            } else {
-              window.router.navigate('/profile');
-            }
+            window.location.hash = '#/profile'; 
             
         } catch (error) {
-            console.error(error);
             alert('Error al actualizar: ' + error.message); 
             btn.textContent = originalText;
             btn.disabled = false;
