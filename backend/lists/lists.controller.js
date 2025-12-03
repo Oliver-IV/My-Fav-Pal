@@ -1,13 +1,16 @@
 import ListService from './lists.service.js';
-import mongoose from 'mongoose'; 
+import CreateListDTO from './dtos/lists.createDTO.js';
+import UpdateListDTO from './dtos/lists.updateDTO.js';
 
 const listService = new ListService();
 
 export const getLists = async (req, res) => {
   try {
     const userId = req.user.userId;
+    console.log(`[Controller] Buscando listas para el usuario con ID: ${userId}`); // <-- LOG 1
 
     const lists = await listService.getListsByUserId(userId);
+    console.log(`[Controller] Listas encontradas en la BD:`, lists); // <-- LOG 2
 
     res.status(200).json({
       success: true,
@@ -21,49 +24,16 @@ export const getLists = async (req, res) => {
   }
 };
 
-export const getList = async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid list ID format.' });
-    }
-
-    const list = await listService.getListById(id, userId);
-    res.status(200).json({
-      success: true,
-      data: list,
-    });
-  } catch (error) {
-    if (error.message.includes('List not found')) {
-      return res.status(404).json({ success: false, message: error.message });
-    }
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
 export const createList = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { name, description, visibility, items } = req.body;
+    const createListDTO = new CreateListDTO(req.body);
 
-    if (!name) {
+    if (!createListDTO.name) {
       return res.status(400).json({ success: false, message: 'List name is required.' });
     }
 
-    const listToCreate = {
-      name,
-      description,
-      visibility,
-      items: items || []
-    };
-
-    const newList = await listService.createList(listToCreate, userId);
-
+    const newList = await listService.createList(createListDTO, userId);
     res.status(201).json({
       success: true,
       message: 'List created successfully',
@@ -81,27 +51,15 @@ export const updateList = async (req, res) => {
   try {
     const userId = req.user.userId;
     const { id } = req.params;
-    const { name, description, visibility, items } = req.body;
+    const updateListDTO = new UpdateListDTO(req.body);
 
-    if (!name) {
-      return res.status(400).json({ success: false, message: 'List name is required.' });
-    }
-
-    const updateData = { name, description, visibility, items };
-
-    console.log(updateData, id, userId); ;
-
-    const updatedList = await listService.updateList(id, updateData, userId);
-
+    const updatedList = await listService.updateList(id, updateListDTO, userId);
     res.status(200).json({
       success: true,
       message: 'List updated successfully',
       data: updatedList,
     });
   } catch (error) {
-    if (error.message.includes('not found') || error.message.includes('permission')) {
-      return res.status(404).json({ success: false, message: error.message });
-    }
     res.status(400).json({
       success: false,
       message: error.message,
