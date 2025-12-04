@@ -1,9 +1,9 @@
 import User from '../users/entities/user.entity.js';
+import Media from './entities/media.entity.js'; // 1. Importa el modelo Media
 
 export default class MediaService {
   constructor() {}
 
-  // Obtener watchlist de un usuario
   async getWatchlist(userId) {
     const user = await User.findById(userId);
     if (!user) {
@@ -12,7 +12,6 @@ export default class MediaService {
     return user.watchlist;
   }
 
-  // Agregar item a watchlist
   async addToWatchlist(userId, watchlistItem) {
     const user = await User.findById(userId);
     if (!user) {
@@ -25,7 +24,6 @@ export default class MediaService {
     return user.watchlist;
   }
 
-  // Actualizar item en watchlist
   async updateWatchlistItem(userId, itemId, updateData) {
     const user = await User.findById(userId);
     if (!user) {
@@ -43,7 +41,6 @@ export default class MediaService {
     return user.watchlist;
   }
 
-  // Eliminar item de watchlist
   async removeFromWatchlist(userId, itemId) {
     const user = await User.findById(userId);
     if (!user) {
@@ -54,5 +51,16 @@ export default class MediaService {
     await user.save();
 
     return user.watchlist;
+  }
+
+  async searchMedia(query) {
+    if (!query) {
+      return [];
+    }
+
+    const searchRegex = new RegExp(query, 'i');
+    return Media.find({ name: searchRegex })
+      .limit(20)
+      .select('name poster type platform'); 
   }
 }
