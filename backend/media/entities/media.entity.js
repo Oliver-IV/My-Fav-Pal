@@ -5,6 +5,7 @@ const MediaSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: String,
   link: String,
+  poster: String,
   platform: [String], 
   genres: [String], 
   status: String,
