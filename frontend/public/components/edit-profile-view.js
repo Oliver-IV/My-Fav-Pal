@@ -88,7 +88,7 @@ class EditProfileView extends HTMLElement {
             
             console.log('Perfil actualizado con éxito'); 
 
-            window.location.hash = '#/profile'; 
+           window.router.navigate("/profile")
             
         } catch (error) {
             alert('Error al actualizar: ' + error.message); 
