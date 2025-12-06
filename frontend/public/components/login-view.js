@@ -79,7 +79,7 @@ class LoginView extends HTMLElement {
       errorDiv.innerHTML = ""
 
       await authService.login(email, password)
-      window.router.navigate("/home")
+      window.router.navigate("/start")
     } catch (error) {
       errorDiv.innerHTML = `
         <div class="error-message">

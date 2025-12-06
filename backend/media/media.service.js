@@ -1,5 +1,5 @@
 import User from '../users/entities/user.entity.js';
-import Media from './entities/media.entity.js'; // 1. Importa el modelo Media
+import Media from './entities/media.entity.js';
 
 export default class MediaService {
   constructor() {}
@@ -52,7 +52,9 @@ export default class MediaService {
 
     return user.watchlist;
   }
-
+async getAllMedia() {
+        return Media.find(); 
+    }
   async searchMedia(query) {
     if (!query) {
       return [];
