@@ -77,7 +77,9 @@ export default class MediaService {
 
     return user.watchlist;
   }
-
+async getAllMedia() {
+        return Media.find(); 
+    }
   async searchMedia(query) {
     if (!query) return [];
     const searchRegex = new RegExp(query, 'i');

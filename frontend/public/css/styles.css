@@ -298,3 +298,182 @@ body {
   color: var(--text-secondary);
   font-size: 1.1rem;
 }
+
+
+.login-page {   
+  display: grid; 
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  background: var(--background);
+  gap: 0;
+}
+.login-marketing {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 4rem 3rem;
+  color: var(--text-primary);
+
+  background: linear-gradient(
+      to bottom, 
+      rgba(15, 23, 42, 0.7), 
+      rgba(15, 23, 42, 0.95)
+    ), 
+    url('https://variety.com/wp-content/uploads/2013/03/dvr-television.jpg?w=1000&h=563&crop=1');
+    
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.marketing-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+  letter-spacing: 1px;
+  color: var(--text-primary);
+}
+
+.marketing-content h2 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.marketing-content p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 3rem;
+  line-height: 1.6;
+  max-width: 450px;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.category-card {
+  border: 1px solid var(--surface-light);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  text-align: center;
+  color: white; 
+  font-weight: 700;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 120px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.category-card:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+.card-manga {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+  url('https://wallpaperaccess.com/full/4132000.jpg');
+}
+
+.card-videos {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+  url('https://mir-s3-cdn-cf.behance.net/projects/max_808/adc3e3185747547.Y3JvcCwxODQxLDE0NDAsMzYwLDA.jpg');
+}
+
+.card-series {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+  url('https://d500.epimg.net/cincodias/imagenes/2015/03/24/lifestyle/1427218018_749426_1427218090_noticia_normal.jpg');
+}
+
+.card-movies {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+  url('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/5298bac0-b8bf-4c80-af67-725c1272dbb0/dixqlt0-df812693-6416-4755-96d5-6526498ba612.jpg/v1/fill/w_1192,h_670,q_70,strp/2025_posters__1st_edition_by_thekingblader995_dixqlt0-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTA4MCIsInBhdGgiOiJcL2ZcLzUyOThiYWMwLWI4YmYtNGM4MC1hZjY3LTcyNWMxMjcyZGJiMFwvZGl4cWx0MC1kZjgxMjY5My02NDE2LTQ3NTUtOTZkNS02NTI2NDk4YmE2MTIuanBnIiwid2lkdGgiOiI8PTE5MjAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.UvF9wPI8cGOnvEts9A89Q46sj8re1Ign2udEFm8z0Ek');
+}
+
+.login-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 3rem;
+  background: var(--background);
+}
+
+.login-container {
+  width: 100%;
+  max-width: 450px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.login-header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.btn-login {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--primary-color);
+  border: none;
+  border-radius: var(--border-radius);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 1rem;
+}
+
+.btn-login:hover {
+  background: var(--primary-dark);
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+}
+
+.form-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.form-footer a {
+  color: var(--primary-color);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.form-footer a:hover {
+  color: var(--secondary-color);
+  text-decoration: underline;
+}
+
+@media (max-width: 1024px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+  .login-marketing {
+    padding: 3rem 2rem;
+    min-height: 300px;
+}
+}

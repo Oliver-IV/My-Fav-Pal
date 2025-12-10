@@ -1,4 +1,4 @@
-import authService from '../js/services/auth.service.js';
+ import authService from '../js/services/auth.service.js';
 import mediaService from '../js/services/media.service.js';
 import { extractProgressFromForm, renderProgressFields, formatProgress } from '../js/utils/progress-fields.js';
 
@@ -64,6 +64,492 @@ class HomeView extends HTMLElement {
       console.error('Error cargando watchlist:', error);
       this.watchlist = [];
     }
+  }
+
+  render() {
+    if (!this.user) {
+      this.innerHTML = '<div class="loading">Cargando perfil...</div>';
+      return;
+    }
+
+    this.innerHTML = `
+      <style>
+        .watchlist-container {
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: 2rem;
+          animation: fadeIn 0.5s ease-out;
+        }
+
+        .watchlist-header {
+          margin-bottom: 2rem;
+        }
+
+        .watchlist-header h1 {
+          font-size: 2rem;
+          color: var(--text-primary);
+          margin-bottom: 1.5rem;
+        }
+
+        .search-filter-bar {
+          display: flex;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+          align-items: center;
+        }
+
+        .search-box {
+          flex: 1;
+          position: relative;
+        }
+
+        .search-box input {
+          width: 100%;
+          padding: 0.75rem 1rem;
+          background: #1f2428;
+          border: 1px solid rgba(71, 85, 105, 0.3);
+          border-radius: 8px;
+          color: var(--text-primary);
+          font-size: 0.95rem;
+        }
+
+        .search-box input::placeholder {
+          color: var(--text-secondary);
+        }
+
+        .search-box input:focus {
+          outline: none;
+          border-color: rgba(100, 116, 139, 0.5);
+        }
+
+        .filter-btn {
+          padding: 0.75rem 1.5rem;
+          background: #1f2428;
+          border: 1px solid rgba(71, 85, 105, 0.3);
+          border-radius: 8px;
+          color: var(--text-primary);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-size: 0.95rem;
+        }
+
+        .filter-btn:hover {
+          background: #2c3440;
+        }
+
+        .tabs {
+          display: flex;
+          gap: 0.5rem;
+          margin-bottom: 2rem;
+          border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .tab {
+          padding: 0.75rem 1.25rem;
+          background: transparent;
+          border: none;
+          border-bottom: 2px solid transparent;
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-size: 0.95rem;
+          font-weight: 500;
+        }
+
+        .tab:hover {
+          color: var(--text-primary);
+        }
+
+        .tab.active {
+          color: var(--text-primary);
+          border-bottom-color: var(--text-primary);
+        }
+
+        .tab-count {
+          margin-left: 0.5rem;
+          color: var(--text-secondary);
+        }
+
+        .watchlist-table {
+          background: #1f2428;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        thead {
+          background: #14181C;
+          border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        th {
+          padding: 1rem;
+          text-align: left;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        tbody tr {
+          border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+          transition: background 0.2s ease;
+          cursor: pointer;
+        }
+
+        tbody tr:hover {
+          background: rgba(255, 255, 255, 0.05);
+        }
+
+        tbody tr:last-child {
+          border-bottom: none;
+        }
+
+        td {
+          padding: 1rem;
+          color: var(--text-primary);
+          font-size: 0.95rem;
+        }
+
+        .media-info {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .media-poster {
+          width: 50px;
+          height: 70px;
+          border-radius: 4px;
+          object-fit: cover;
+          background: #2c3440;
+        }
+
+        .media-title {
+          font-weight: 500;
+        }
+
+        .status-badge {
+          padding: 0.25rem 0.75rem;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          font-weight: 500;
+        }
+
+        .status-ongoing {
+          background: rgba(59, 130, 246, 0.1);
+          color: #60a5fa;
+        }
+
+        .rating {
+          font-weight: 600;
+          color: #fbbf24;
+        }
+
+        .empty-state {
+          text-align: center;
+          padding: 4rem 2rem;
+          color: var(--text-secondary);
+        }
+
+        .empty-state h3 {
+          font-size: 1.5rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .add-btn {
+          padding: 0.75rem 1.5rem;
+          background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+          border: none;
+          border-radius: 8px;
+          color: white;
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .add-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 224, 84, 0.3);
+        }
+
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal {
+          background: #1f2428;
+          border-radius: 12px;
+          padding: 2rem;
+          max-width: 600px;
+          width: 90%;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal h2 {
+          margin-bottom: 1.5rem;
+          color: var(--text-primary);
+        }
+
+        .form-group {
+          margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+          display: block;
+          margin-bottom: 0.5rem;
+          color: var(--text-secondary);
+          font-weight: 500;
+          font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+          width: 100%;
+          padding: 0.75rem;
+          background: #14181C;
+          border: 1px solid rgba(71, 85, 105, 0.3);
+          border-radius: 6px;
+          color: var(--text-primary);
+          font-size: 0.95rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+          outline: none;
+          border-color: var(--primary-color);
+        }
+
+        .form-actions {
+          display: flex;
+          gap: 1rem;
+          margin-top: 2rem;
+        }
+
+        .btn-cancel {
+          flex: 1;
+          padding: 0.75rem;
+          background: transparent;
+          border: 1px solid rgba(71, 85, 105, 0.3);
+          border-radius: 6px;
+          color: var(--text-primary);
+          cursor: pointer;
+          font-weight: 500;
+        }
+
+        .btn-submit {
+          flex: 1;
+          padding: 0.75rem;
+          background: var(--primary-color);
+          border: none;
+          border-radius: 6px;
+          color: white;
+          cursor: pointer;
+          font-weight: 600;
+        }
+
+        .btn-submit:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+          .watchlist-container {
+            padding: 1rem;
+          }
+
+          .search-filter-bar {
+            flex-direction: column;
+          }
+
+          table {
+            font-size: 0.85rem;
+          }
+
+          th, td {
+            padding: 0.75rem 0.5rem;
+          }
+
+          .media-poster {
+            width: 40px;
+            height: 56px;
+          }
+        }
+      </style>
+
+      <div class="watchlist-container">
+        <div class="watchlist-header">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h1>My Watchlist</h1>
+            <button class="add-btn" id="addItemBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add Item
+            </button>
+          </div>
+          
+          <div class="search-filter-bar">
+            <div class="search-box">
+              <input type="text" id="searchInput" placeholder="Search your watchlist..." value="${this.searchQuery}" />
+            </div>
+            <button class="filter-btn">Filters</button>
+          </div>
+
+          <div class="tabs">
+            <button class="tab ${this.activeFilter === 'All' ? 'active' : ''}" data-filter="All">
+              All <span class="tab-count">(${this.watchlist.length})</span>
+            </button>
+            <button class="tab ${this.activeFilter === 'Manga' ? 'active' : ''}" data-filter="Manga">Manga</button>
+            <button class="tab ${this.activeFilter === 'Series' ? 'active' : ''}" data-filter="Series">Series</button>
+            <button class="tab ${this.activeFilter === 'Movie' ? 'active' : ''}" data-filter="Movie">Movies</button>
+            <button class="tab ${this.activeFilter === 'Book' ? 'active' : ''}" data-filter="Book">Books</button>
+            <button class="tab ${this.activeFilter === 'Article' ? 'active' : ''}" data-filter="Article">Articles</button>
+          </div>
+        </div>
+
+        <div class="watchlist-table">
+          ${this.renderWatchlistTable()}
+        </div>
+
+        ${this.showAddModal ? this.renderAddModal() : ''}
+      </div>
+    `;
+
+    this.attachEventListeners();
+  }
+
+  attachEventListeners() {
+    const addBtn = this.querySelector('#addItemBtn');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        this.showAddModal = true;
+        this.render();
+      });
+    }
+
+    const searchInput = this.querySelector('#searchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.searchQuery = e.target.value;
+        
+        if (this.searchDebounceTimer) {
+          clearTimeout(this.searchDebounceTimer);
+        }
+
+        this.searchDebounceTimer = setTimeout(() => {
+          this.updateTableOnly();
+        }, 300);
+      });
+    }
+
+    const tabs = this.querySelectorAll('.tab[data-filter]');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const newFilter = tab.getAttribute('data-filter');
+        if (this.activeFilter !== newFilter) {
+          this.activeFilter = newFilter;
+          this.updateTabs();
+          this.updateTableOnly();
+        }
+      });
+    });
+
+    const closeModalBtn = this.querySelector('#closeModal');
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', () => {
+        this.showAddModal = false;
+        this.render();
+      });
+    }
+
+    const modalOverlay = this.querySelector('.modal-overlay');
+    if (modalOverlay) {
+      modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+          this.showAddModal = false;
+          this.render();
+        }
+      });
+    }
+
+    const addForm = this.querySelector('#addWatchlistForm');
+    if (addForm) {
+      addForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await this.handleAddItem(e);
+      });
+
+      const typeSelect = addForm.querySelector('#type');
+      if (typeSelect) {
+        typeSelect.addEventListener('change', (e) => {
+          this.selectedTypeForAdd = e.target.value;
+          const container = addForm.querySelector('#progressFieldsContainer');
+          if (container) {
+            container.innerHTML = `
+              <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500; font-size: 0.9rem;">Progress</label>
+              ${renderProgressFields(this.selectedTypeForAdd)}
+            `;
+          }
+        });
+      }
+    }
+
+    const rows = this.querySelectorAll('tbody tr[data-media-id]');
+    rows.forEach(row => {
+      row.addEventListener('click', () => {
+        const mediaId = row.getAttribute('data-media-id');
+        window.router.navigate(`/media/${mediaId}`);
+      });
+    });
+  }
+
+  updateTableOnly() {
+    const tableContainer = this.querySelector('.watchlist-table');
+    if (tableContainer) {
+      tableContainer.innerHTML = this.renderWatchlistTable();
+      
+      const rows = this.querySelectorAll('tbody tr[data-media-id]');
+      rows.forEach(row => {
+        row.addEventListener('click', () => {
+          const mediaId = row.getAttribute('data-media-id');
+          window.router.navigate(`/media/${mediaId}`);
+        });
+      });
+    }
+  }
+
+  updateTabs() {
+    const tabs = this.querySelectorAll('.tab[data-filter]');
+    tabs.forEach(tab => {
+      const filter = tab.getAttribute('data-filter');
+      if (filter === this.activeFilter) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
   }
 
   async handleAddItem(e) {
@@ -245,7 +731,10 @@ class HomeView extends HTMLElement {
               ${renderProgressFields('series')}
             </div>
 
-            <div class="form-group"><label for="rating">Rating (0-10)</label><input type="number" id="rating" name="rating" min="0" max="10" step="0.1" /></div>
+            <div class="form-group">
+              <label for="rating">Rating (0-10)</label>
+              <input type="number" id="rating" name="rating" min="0" max="5" step="0.1" placeholder="8.5" />
+            </div>
 
             <div class="form-actions">
               <button type="button" class="btn-cancel" id="closeModal">Cancel</button>

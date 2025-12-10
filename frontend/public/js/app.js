@@ -75,6 +75,7 @@ const router = new Router();
 router.addRoute('/', '<login-view></login-view>');
 router.addRoute('/login', '<login-view></login-view>');
 router.addRoute('/register', '<register-view></register-view>');
+router.addRoute('/start', '<start-view></start-view>');
 router.addRoute('/home', '<home-view></home-view>');
 router.addRoute('/media/:id', (id) => `<media-detail-view media-id="${id}"></media-detail-view>`)
 router.addRoute('/lists', '<lists-view></lists-view>');
