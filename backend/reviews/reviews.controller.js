@@ -1,6 +1,23 @@
-import Review from './entities/review.entity.js';
+import ReviewService from './reviews.service.js';
 import mongoose from 'mongoose';
-import Media from '../media/entities/media.entity.js';
+
+const reviewService = new ReviewService();
+
+export const getReviewsByMediaId = async (req, res) => {
+    try {
+        const { mediaId } = req.params;
+        const reviews = await reviewService.getReviewsByMediaId(mediaId);
+
+        res.status(200).json({
+            success: true,
+            data: reviews,
+            count: reviews.length
+        });
+    } catch (error) {
+        console.error("Error obteniendo reviews de media:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
 
 export const getReviewsByUserId = async (req, res) => {
     try {
@@ -10,24 +27,7 @@ export const getReviewsByUserId = async (req, res) => {
             return res.status(400).json({ success: false, message: 'ID de usuario inválido.' });
         }
 
-        // Ahora Media ya está importado correctamente, así que el modelo se registra.
-        // Podemos usar la variable 'Media' directamente en el populate.
-
-        const reviews = await Review.find({ userId: userId })
-                                     .populate({
-                                         path: 'mediaId',
-                                         model: Media, // Usamos la clase importada
-                                         select: 'name type posterUrl'
-                                     })
-                                     .lean(); 
-
-        if (!reviews || reviews.length === 0) {
-            return res.status(200).json({ 
-                success: true, 
-                data: [], 
-                message: 'El usuario no tiene reviews.' 
-            });
-        }
+        const reviews = await reviewService.getReviewsByUserId(userId);
 
         res.status(200).json({
             success: true,
@@ -41,34 +41,41 @@ export const getReviewsByUserId = async (req, res) => {
     }
 };
 
-
 export const createReview = async (req, res) => {
-    if (!req.user || !req.user.id) {
+    // CORRECCIÓN: Usamos req.user.userId
+    if (!req.user || !req.user.userId) {
         return res.status(401).json({ success: false, message: 'No autenticado.' });
     }
-    
-    const userId = req.user.id; 
+
+    const userId = req.user.userId;
     const { mediaId, rating, title, body } = req.body;
 
     if (!mediaId || !rating) {
-        return res.status(400).json({ success: false, message: 'Faltan campos obligatorios: mediaId y rating.' });
+        return res.status(400).json({ success: false, message: 'Faltan campos obligatorios.' });
     }
 
     try {
-        const newReview = await Review.create({ 
-            mediaId, 
-            userId, 
-            rating, 
-            title, 
-            body 
+        const newReview = await reviewService.createReview({
+            mediaId,
+            userId,
+            rating,
+            title,
+            body
         });
 
-        res.status(201).json({ 
-            success: true, 
+        res.status(201).json({
+            success: true,
             message: 'Review creada con éxito.',
-            data: newReview 
+            data: newReview
         });
     } catch (error) {
+        // Manejo de duplicados (Upsert prevention)
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: 'Ya tienes una review para este título. Edítala en su lugar.'
+            });
+        }
         console.error("Error al crear review:", error);
         res.status(500).json({ success: false, message: error.message });
     }
@@ -76,10 +83,8 @@ export const createReview = async (req, res) => {
 
 export const getReviewById = async (req, res) => {
     try {
-        const review = await Review.findById(req.params.id)
-            .populate('userId', 'displayName') 
-            .populate('mediaId', 'name type');
-            
+        const review = await reviewService.getReviewById(req.params.id);
+
         if (!review) {
             return res.status(404).json({ success: false, message: 'Review no encontrada.' });
         }
@@ -92,43 +97,51 @@ export const getReviewById = async (req, res) => {
 
 export const updateReview = async (req, res) => {
     try {
-        let review = await Review.findById(req.params.id);
+        // Obtenemos la review sin populate para verificar el ID crudo
+        // Nota: Importamos el modelo Review en el servicio, pero aquí usamos el método del servicio
+        // Si tu servicio hace populate, necesitamos acceder a userId._id o userId
+
+        // Forma segura: Buscar directamente con Mongoose aquí para validar propiedad
+        const ReviewModel = mongoose.model('Review');
+        let review = await ReviewModel.findById(req.params.id);
 
         if (!review) {
             return res.status(404).json({ success: false, message: 'Review no encontrada.' });
         }
 
-        if (review.userId.toString() !== req.user.id) {
+        // CORRECCIÓN CRÍTICA AQUÍ: Comparar con req.user.userId
+        if (review.userId.toString() !== req.user.userId) {
             return res.status(403).json({ success: false, message: 'No tienes permiso para actualizar esta review.' });
         }
 
-        review = await Review.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true,
-        });
+        const updated = await reviewService.updateReview(req.params.id, req.body);
 
-        res.status(200).json({ success: true, message: 'Review actualizada con éxito.', data: review });
+        res.status(200).json({ success: true, message: 'Review actualizada con éxito.', data: updated });
     } catch (error) {
+        console.error("Error updateReview:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
 export const deleteReview = async (req, res) => {
     try {
-        const review = await Review.findById(req.params.id);
+        const ReviewModel = mongoose.model('Review');
+        const review = await ReviewModel.findById(req.params.id);
 
         if (!review) {
             return res.status(404).json({ success: false, message: 'Review no encontrada.' });
         }
 
-        if (review.userId.toString() !== req.user.id) {
+        // CORRECCIÓN CRÍTICA AQUÍ: Comparar con req.user.userId
+        if (review.userId.toString() !== req.user.userId) {
             return res.status(403).json({ success: false, message: 'No tienes permiso para eliminar esta review.' });
         }
 
-        await review.deleteOne(); 
+        await reviewService.deleteReview(req.params.id);
 
         res.status(200).json({ success: true, message: 'Review eliminada con éxito.', data: {} });
     } catch (error) {
+        console.error("Error deleteReview:", error);
         res.status(500).json({ success: false, message: 'Error interno del servidor.' });
     }
 };

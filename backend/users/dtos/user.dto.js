@@ -108,6 +108,7 @@ export class UserResponseDTO {
 // DTO para item de watchlist
 export class WatchlistItemDTO {
   constructor(data) {
+    this.mediaId = data.mediaId; 
     this.mediaName = data.mediaName;
     this.type = data.type;
     this.platform = data.platform;

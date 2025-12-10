@@ -1,8 +1,8 @@
 import User from '../users/entities/user.entity.js';
-import Media from './entities/media.entity.js'; // 1. Importa el modelo Media
+import Media from './entities/media.entity.js';
 
 export default class MediaService {
-  constructor() {}
+  constructor() { }
 
   async getWatchlist(userId) {
     const user = await User.findById(userId);
@@ -17,6 +17,31 @@ export default class MediaService {
     if (!user) {
       throw new Error('Usuario no encontrado');
     }
+
+    if (!watchlistItem.mediaId) {
+
+      let globalMedia = await Media.findOne({
+        name: { $regex: new RegExp(`^${watchlistItem.mediaName}$`, 'i') },
+        type: watchlistItem.type
+      });
+
+      if (!globalMedia) {
+        globalMedia = new Media({
+          name: watchlistItem.mediaName,
+          type: watchlistItem.type,
+          poster: watchlistItem.posterUrl,
+          platform: watchlistItem.platform ? [watchlistItem.platform] : [],
+          description: 'Agregado por la comunidad',
+          rating: 0
+        });
+        await globalMedia.save();
+        console.log(`[MediaService] Nueva entrada global creada: ${globalMedia.name} (${globalMedia._id})`);
+      }
+
+
+      watchlistItem.mediaId = globalMedia._id;
+    }
+
 
     user.watchlist.push(watchlistItem);
     await user.save();
@@ -54,13 +79,10 @@ export default class MediaService {
   }
 
   async searchMedia(query) {
-    if (!query) {
-      return [];
-    }
-
+    if (!query) return [];
     const searchRegex = new RegExp(query, 'i');
     return Media.find({ name: searchRegex })
       .limit(20)
-      .select('name poster type platform'); 
+      .select('name poster type platform _id');
   }
 }

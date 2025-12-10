@@ -38,6 +38,30 @@ class ReviewService {
             return [];
         }
     }
+
+    async getReviewsByMediaId(mediaId) {
+      
+        try {
+            const response = await fetch(`${API_BASE_URL}/reviews/media/${mediaId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error al cargar reviews del media`);
+            }
+
+            const data = await response.json();
+            return data.data || [];
+        } catch (error) {
+            console.error('Fetch error:', error);
+            return [];
+        }
+    }
 }
+
+
 
 export default ReviewService;

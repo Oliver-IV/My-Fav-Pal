@@ -9,6 +9,7 @@ import mediaRouter from './media/media.router.js';
 import listsRouter from './lists/lists.router.js';
 import reviewsRouter from './reviews/reviews.router.js';
 
+
 dotenv.config();
 
 const app = express();

@@ -3,15 +3,17 @@ import {
     createReview, 
     getReviewById, 
     getReviewsByUserId, 
+    getReviewsByMediaId, 
     updateReview, 
     deleteReview 
-} from './reviews.controller.js'; 
+} from './reviews.controller.js';
 
 import { authenticate } from '../utils/auth.middleware.js'; 
 
 const router = express.Router();
 
 router.get('/user/:userId', authenticate, getReviewsByUserId); 
+router.get('/media/:mediaId', getReviewsByMediaId);
 
 router.route('/')
     .post(authenticate, createReview); 
