@@ -266,7 +266,6 @@ class ListViewDetail extends HTMLElement {
             </div>
         `;
 
-        // Event listeners
         content.querySelector('#edit-list-btn')?.addEventListener('click', () => {
             this.dispatchEvent(new CustomEvent('edit', { detail: this.listData }));
             this.close();

@@ -8,10 +8,10 @@ class MediaDetailView extends HTMLElement {
   constructor() {
     super();
     this.mediaItem = null;
-    this.publicReviews = []; 
-    this.myReview = null; // <--- AQUÍ GUARDAMOS TU REVIEW SI EXISTE
+    this.publicReviews = [];
+    this.myReview = null;
     this.showEditModal = false;
-    this.showReviewModal = false; 
+    this.showReviewModal = false;
     this.isLoadingReviews = false;
   }
 
@@ -40,7 +40,7 @@ class MediaDetailView extends HTMLElement {
         this.mediaItem = watchlist.find(item => item._id === watchlistId);
 
         if (this.mediaItem && this.mediaItem.mediaId) {
-            this.loadPublicReviews(this.mediaItem.mediaId);
+          this.loadPublicReviews(this.mediaItem.mediaId);
         }
       }
     } catch (error) {
@@ -49,104 +49,103 @@ class MediaDetailView extends HTMLElement {
   }
 
   async loadPublicReviews(globalMediaId) {
-      this.isLoadingReviews = true;
-      this.render();
-      try {
-          this.publicReviews = await reviewService.getReviewsByMediaId(globalMediaId);
-          
-          // --- DETECTAR SI EL USUARIO YA TIENE REVIEW ---
-          const currentUser = authService.getUser();
-          if (currentUser && this.publicReviews.length > 0) {
-              // Buscamos una review donde el userId coincida con el usuario logueado
-              // Nota: userId puede ser un objeto (populate) o un string
-              this.myReview = this.publicReviews.find(r => {
-                  const reviewUserId = r.userId._id || r.userId;
-                  return reviewUserId === currentUser.id || reviewUserId === currentUser._id;
-              });
-          } else {
-              this.myReview = null;
-          }
-          // ----------------------------------------------
+    this.isLoadingReviews = true;
+    this.render();
+    try {
+      this.publicReviews = await reviewService.getReviewsByMediaId(globalMediaId);
 
-      } catch (error) {
-          console.error("Error cargando reviews:", error);
-      } finally {
-          this.isLoadingReviews = false;
-          this.render();
+
+      const currentUser = authService.getUser();
+      if (currentUser && this.publicReviews.length > 0) {
+
+        this.myReview = this.publicReviews.find(r => {
+          const reviewUserId = r.userId._id || r.userId;
+          return reviewUserId === currentUser.id || reviewUserId === currentUser._id;
+        });
+      } else {
+        this.myReview = null;
       }
+
+
+    } catch (error) {
+      console.error("Error cargando reviews:", error);
+    } finally {
+      this.isLoadingReviews = false;
+      this.render();
+    }
   }
 
-  // --- LÓGICA INTELIGENTE: CREAR O EDITAR ---
+
   async handleSaveReview(e) {
     e.preventDefault();
-    
+
     if (!this.mediaItem.mediaId) {
-        alert("Error: Ítem sin vinculación global. Edita el ítem primero.");
-        return;
+      alert("Error: Ítem sin vinculación global. Edita el ítem primero.");
+      return;
     }
 
     const formData = new FormData(e.target);
     const submitBtn = this.querySelector('#submitReviewBtn');
-    
+
     const reviewData = {
-        mediaId: this.mediaItem.mediaId,
-        title: formData.get('title'),
-        body: formData.get('body'),
-        rating: Number(formData.get('rating'))
+      mediaId: this.mediaItem.mediaId,
+      title: formData.get('title'),
+      body: formData.get('body'),
+      rating: Number(formData.get('rating'))
     };
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Guardando...';
 
     try {
-        const token = authService.getToken();
-        let response;
+      const token = authService.getToken();
+      let response;
 
-        if (this.myReview) {
-            // --- MODO EDICIÓN (PUT) ---
-            response = await fetch(`http://localhost:3000/api/reviews/${this.myReview._id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(reviewData)
-            });
-        } else {
-            // --- MODO CREACIÓN (POST) ---
-            response = await fetch('http://localhost:3000/api/reviews', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(reviewData)
-            });
-        }
+      if (this.myReview) {
 
-        if (response.ok) {
-            this.showReviewModal = false;
-            // Recargamos para ver los cambios reflejados
-            await this.loadPublicReviews(this.mediaItem.mediaId);
-        } else {
-            const err = await response.json();
-            alert(err.message || 'Error al guardar review');
-        }
+        response = await fetch(`http://localhost:3000/api/reviews/${this.myReview._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(reviewData)
+        });
+      } else {
+
+        response = await fetch('http://localhost:3000/api/reviews', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(reviewData)
+        });
+      }
+
+      if (response.ok) {
+        this.showReviewModal = false;
+
+        await this.loadPublicReviews(this.mediaItem.mediaId);
+      } else {
+        const err = await response.json();
+        alert(err.message || 'Error al guardar review');
+      }
 
     } catch (error) {
-        console.error(error);
-        alert('Error de conexión');
+      console.error(error);
+      alert('Error de conexión');
     } finally {
-        this.render(); // Cerrar modal y actualizar vista
+      this.render();
     }
   }
 
-  // ... (handleUpdate y handleDelete se mantienen igual) ...
+
   async handleUpdate(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
     const updateData = {
-      mediaId: this.mediaItem.mediaId, 
+      mediaId: this.mediaItem.mediaId,
       mediaName: formData.get('mediaName'),
       type: formData.get('type'),
       platform: formData.get('platform'),
@@ -171,16 +170,16 @@ class MediaDetailView extends HTMLElement {
   async handleDelete() {
     if (!confirm('¿Eliminar?')) return;
     const token = authService.getToken();
-    await fetch(`http://localhost:3000/api/media/watchlist/${this.mediaItem._id}`, { method: 'DELETE', headers: {'Authorization': `Bearer ${token}`} });
+    await fetch(`http://localhost:3000/api/media/watchlist/${this.mediaItem._id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
     window.router.navigate('/home');
   }
 
   renderReviewsSection() {
-      if (this.isLoadingReviews) return '<p style="color:#888;">Cargando opiniones...</p>';
-      
-      const reviewsHtml = (!this.publicReviews || this.publicReviews.length === 0) 
-        ? `<div class="empty-reviews"><p>No hay opiniones públicas aún.</p></div>`
-        : `<div class="reviews-grid">
+    if (this.isLoadingReviews) return '<p style="color:#888;">Cargando opiniones...</p>';
+
+    const reviewsHtml = (!this.publicReviews || this.publicReviews.length === 0)
+      ? `<div class="empty-reviews"><p>No hay opiniones públicas aún.</p></div>`
+      : `<div class="reviews-grid">
             ${this.publicReviews.map(review => `
                 <div class="review-card" style="${this.myReview && this.myReview._id === review._id ? 'border-color: #58a6ff;' : ''}">
                     <div class="review-header">
@@ -196,11 +195,10 @@ class MediaDetailView extends HTMLElement {
             `).join('')}
            </div>`;
 
-      // BOTÓN DINÁMICO: EDITAR O ESCRIBIR
-      const btnText = this.myReview ? '✎ Editar mi Review' : '+ Escribir Review';
-      const btnClass = this.myReview ? 'btn-edit-review' : 'btn-primary-small';
+    const btnText = this.myReview ? '✎ Editar mi Review' : '+ Escribir Review';
+    const btnClass = this.myReview ? 'btn-edit-review' : 'btn-primary-small';
 
-      return `
+    return `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
              <h2>Opiniones de la Comunidad</h2>
              <button id="openReviewModalBtn" class="${btnClass}">${btnText}</button>
@@ -210,14 +208,13 @@ class MediaDetailView extends HTMLElement {
   }
 
   renderReviewModal() {
-      // PRE-LLENAR DATOS SI EXISTE REVIEW
-      const titleVal = this.myReview ? this.myReview.title : '';
-      const bodyVal = this.myReview ? this.myReview.body : '';
-      const ratingVal = this.myReview ? this.myReview.rating : '';
-      const modalTitle = this.myReview ? 'Editar tu Review' : 'Escribir Review';
-      const btnText = this.myReview ? 'Actualizar' : 'Publicar';
+    const titleVal = this.myReview ? this.myReview.title : '';
+    const bodyVal = this.myReview ? this.myReview.body : '';
+    const ratingVal = this.myReview ? this.myReview.rating : '';
+    const modalTitle = this.myReview ? 'Editar tu Review' : 'Escribir Review';
+    const btnText = this.myReview ? 'Actualizar' : 'Publicar';
 
-      return `
+    return `
       <div class="modal-overlay review-overlay">
         <div class="modal">
           <h2>${modalTitle}</h2>
@@ -245,7 +242,6 @@ class MediaDetailView extends HTMLElement {
   }
 
   renderEditModal() {
-    // (Mismo renderEditModal que antes...)
     return `
       <div class="modal-overlay edit-overlay">
         <div class="modal">
@@ -340,15 +336,12 @@ class MediaDetailView extends HTMLElement {
     this.querySelector('#backBtn')?.addEventListener('click', () => window.router.navigate('/home'));
     this.querySelector('#editBtn')?.addEventListener('click', () => { this.showEditModal = true; this.render(); });
     this.querySelector('#deleteBtn')?.addEventListener('click', () => this.handleDelete());
-    
-    // Modales Close
+
     this.querySelector('#closeModal')?.addEventListener('click', () => { this.showEditModal = false; this.render(); });
     this.querySelector('#closeReviewModal')?.addEventListener('click', () => { this.showReviewModal = false; this.render(); });
 
-    // Review Open
     this.querySelector('#openReviewModalBtn')?.addEventListener('click', () => { this.showReviewModal = true; this.render(); });
 
-    // Submits
     this.querySelector('#addReviewForm')?.addEventListener('submit', (e) => this.handleSaveReview(e));
     this.querySelector('#editForm')?.addEventListener('submit', (e) => this.handleUpdate(e));
   }

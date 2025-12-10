@@ -165,11 +165,11 @@ class RegisterView extends HTMLElement {
     const successDiv = this.querySelector('#successMessage');
     const submitBtn = this.querySelector('button[type="submit"]');
 
-    // Limpiar mensajes previos
+   
     errorDiv.innerHTML = '';
     successDiv.innerHTML = '';
 
-    // Validar contraseñas
+
     if (password !== confirmPassword) {
       errorDiv.innerHTML = `
         <div class="error-message">
@@ -180,20 +180,20 @@ class RegisterView extends HTMLElement {
     }
 
     try {
-      // Deshabilitar botón durante el registro
+  
       submitBtn.disabled = true;
       submitBtn.textContent = 'Creando cuenta...';
 
       await authService.register(email, password, displayName, avatarUrl);
 
-      // Mostrar mensaje de éxito
+     
       successDiv.innerHTML = `
         <div class="success-message">
           ¡Cuenta creada exitosamente! Redirigiendo...
         </div>
       `;
 
-      // Redirigir a home después de un breve delay
+     
       setTimeout(() => {
         window.router.navigate('/home');
       }, 1500);

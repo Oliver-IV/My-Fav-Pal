@@ -474,29 +474,27 @@ class ListEditWizard extends HTMLElement {
         const content = this.shadowRoot.querySelector('#modal-content');
         if (!content) return;
 
-        // Search input
         const searchInput = content.querySelector('#media-search');
         searchInput?.addEventListener('input', (e) => {
             this.searchQuery = e.target.value;
             clearTimeout(this.searchDebounce);
-            
+
             this.searchDebounce = setTimeout(async () => {
                 this.searchResults = await mediaService.searchMedia(this.searchQuery);
                 this.renderContent();
-                
+
                 const newSearchInput = this.shadowRoot.querySelector('#media-search');
                 newSearchInput?.focus();
                 newSearchInput?.setSelectionRange(this.searchQuery.length, this.searchQuery.length);
             }, 350);
         });
 
-        // Add media to list
         content.addEventListener('click', (e) => {
             const mediaCard = e.target.closest('.media-card');
             if (mediaCard && !mediaCard.classList.contains('in-list')) {
                 const mediaId = mediaCard.dataset.mediaId;
                 const mediaObject = this.searchResults.find(m => m._id === mediaId);
-                
+
                 if (mediaObject) {
                     this.selectedMedia.set(mediaId, mediaObject);
                     this.hasChanges = true;
@@ -505,7 +503,6 @@ class ListEditWizard extends HTMLElement {
                 }
             }
 
-            // Remove media from list
             const removeBtn = e.target.closest('.remove-btn');
             if (removeBtn) {
                 const mediaId = removeBtn.dataset.mediaId;
@@ -514,18 +511,15 @@ class ListEditWizard extends HTMLElement {
                 this.renderContent();
             }
 
-            // Save changes
             if (e.target.id === 'save-btn') {
                 this.save();
             }
 
-            // Cancel
             if (e.target.id === 'cancel-btn') {
                 this.close();
             }
         });
 
-        // Track changes in form inputs
         ['#name', '#description', '#visibility'].forEach(selector => {
             content.querySelector(selector)?.addEventListener('input', () => {
                 this.hasChanges = true;
@@ -554,7 +548,7 @@ class ListEditWizard extends HTMLElement {
             items: Array.from(this.selectedMedia.keys()).map(id => ({ mediaId: id }))
         };
 
-        this.hasChanges = false; 
+        this.hasChanges = false;
         this.dispatchEvent(new CustomEvent('save', { detail: data }));
         this.close();
     }

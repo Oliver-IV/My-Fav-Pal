@@ -42,7 +42,6 @@ export const getReviewsByUserId = async (req, res) => {
 };
 
 export const createReview = async (req, res) => {
-    // CORRECCIÓN: Usamos req.user.userId
     if (!req.user || !req.user.userId) {
         return res.status(401).json({ success: false, message: 'No autenticado.' });
     }
@@ -69,7 +68,6 @@ export const createReview = async (req, res) => {
             data: newReview
         });
     } catch (error) {
-        // Manejo de duplicados (Upsert prevention)
         if (error.code === 11000) {
             return res.status(400).json({
                 success: false,
@@ -97,11 +95,7 @@ export const getReviewById = async (req, res) => {
 
 export const updateReview = async (req, res) => {
     try {
-        // Obtenemos la review sin populate para verificar el ID crudo
-        // Nota: Importamos el modelo Review en el servicio, pero aquí usamos el método del servicio
-        // Si tu servicio hace populate, necesitamos acceder a userId._id o userId
 
-        // Forma segura: Buscar directamente con Mongoose aquí para validar propiedad
         const ReviewModel = mongoose.model('Review');
         let review = await ReviewModel.findById(req.params.id);
 
@@ -109,7 +103,6 @@ export const updateReview = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Review no encontrada.' });
         }
 
-        // CORRECCIÓN CRÍTICA AQUÍ: Comparar con req.user.userId
         if (review.userId.toString() !== req.user.userId) {
             return res.status(403).json({ success: false, message: 'No tienes permiso para actualizar esta review.' });
         }
@@ -132,7 +125,6 @@ export const deleteReview = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Review no encontrada.' });
         }
 
-        // CORRECCIÓN CRÍTICA AQUÍ: Comparar con req.user.userId
         if (review.userId.toString() !== req.user.userId) {
             return res.status(403).json({ success: false, message: 'No tienes permiso para eliminar esta review.' });
         }

@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET, JWT_EXPIRES_IN } from '../utils/configs.js';
 
 export default class UserService {
-	constructor() {}
+	constructor() { }
 
 	// Generar token JWT
 	generateToken(userId, email) {
@@ -53,21 +53,17 @@ export default class UserService {
 		};
 	}
 
-	// Login
 	async login(email, password) {
-		// Buscar usuario
 		const user = await User.findOne({ email });
 		if (!user) {
 			throw new Error('Credenciales inválidas');
 		}
 
-		// Verificar contraseña
 		const isPasswordValid = await bcrypt.compare(password, user.password);
 		if (!isPasswordValid) {
 			throw new Error('Credenciales inválidas');
 		}
 
-		// Generar token
 		const token = this.generateToken(user._id, user.email);
 
 		return {
@@ -76,14 +72,13 @@ export default class UserService {
 				email: user.email,
 				displayName: user.displayName,
 				avatarUrl: user.avatarUrl,
-                city: user.city, 
-                favorites: user.favorites,
+				city: user.city,
+				favorites: user.favorites,
 			},
 			token,
 		};
 	}
 
-	// Crear usuario (sin autenticación, para uso interno)
 	async createUser(userData) {
 		const hashedPassword = await bcrypt.hash(userData.password, 10);
 		const user = new User({
@@ -93,67 +88,63 @@ export default class UserService {
 		return await user.save();
 	}
 
-	// Obtener todos los usuarios (sin mostrar contraseñas)
 	async getAllUsers() {
 		return await User.find().select('-password');
 	}
 
-	// Obtener usuario por ID
+
 	async getUserById(id) {
 		return await User.findById(id).select('-password');
 	}
 
-	// Obtener usuario por email
+
 	async getUserByEmail(email) {
 		return await User.findOne({ email }).select('-password');
 	}
 
-	
+
 	async updateUser(id, updateData) {
 		if (updateData.password) {
 			delete updateData.password;
 		}
-       
+
 		return await User.findByIdAndUpdate(id, updateData, {
 			new: true,
 			runValidators: true
 		}).select('-password');
 	}
-    
-    async updateFavorites(userId, favoritesArray) {
-        if (!favoritesArray || !Array.isArray(favoritesArray)) {
-            throw new Error("El array de favoritos es inválido.");
-        }
-        
-      
-        const updatedUser = await User.findByIdAndUpdate(
-            userId,
-            { $set: { favorites: favoritesArray } }, 
-            { new: true, select: '-password' } 
-        );
 
-        if (!updatedUser) {
-            throw new Error('No se pudo encontrar o actualizar el usuario en la base de datos.');
-        }
-        
-        return updatedUser;
-    }
+	async updateFavorites(userId, favoritesArray) {
+		if (!favoritesArray || !Array.isArray(favoritesArray)) {
+			throw new Error("El array de favoritos es inválido.");
+		}
 
 
-	// Cambiar contraseña
+		const updatedUser = await User.findByIdAndUpdate(
+			userId,
+			{ $set: { favorites: favoritesArray } },
+			{ new: true, select: '-password' }
+		);
+
+		if (!updatedUser) {
+			throw new Error('No se pudo encontrar o actualizar el usuario en la base de datos.');
+		}
+
+		return updatedUser;
+	}
+
 	async changePassword(id, oldPassword, newPassword) {
 		const user = await User.findById(id);
 		if (!user) {
 			throw new Error('Usuario no encontrado');
 		}
 
-		// Verificar contraseña antigua
 		const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
 		if (!isPasswordValid) {
 			throw new Error('Contraseña actual incorrecta');
 		}
 
-		// Hashear nueva contraseña
+
 		const hashedPassword = await bcrypt.hash(newPassword, 10);
 		user.password = hashedPassword;
 		await user.save();
@@ -161,7 +152,7 @@ export default class UserService {
 		return { message: 'Contraseña actualizada exitosamente' };
 	}
 
-	// Eliminar usuario
+
 	async deleteUser(id) {
 		return await User.findByIdAndDelete(id);
 	}

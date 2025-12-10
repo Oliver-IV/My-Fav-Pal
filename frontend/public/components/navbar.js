@@ -16,7 +16,7 @@ class Navbar extends HTMLElement {
       this.render()
     })
 
-    // Cerrar dropdown al hacer click fuera
+   
     document.addEventListener("click", (e) => {
       if (!this.contains(e.target) && this.dropdownOpen) {
         this.dropdownOpen = false

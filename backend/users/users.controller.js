@@ -9,7 +9,6 @@ import {
 
 const userService = new UserService();
 
-// Registro de usuario
 export const register = async (req, res) => {
   try {
     const registerDTO = new RegisterUserDTO(req.body);
@@ -38,7 +37,6 @@ export const register = async (req, res) => {
   }
 };
 
-// Login de usuario
 export const login = async (req, res) => {
   try {
     const loginDTO = new LoginUserDTO(req.body);
@@ -83,8 +81,8 @@ export const getProfile = async (req, res) => {
     const userDto = new UserResponseDTO(user);
 
     const responseData = {
-      ...userDto, 
-      favorites: user.favorites || [] 
+      ...userDto,
+      favorites: user.favorites || []
     };
 
     res.status(200).json({
@@ -102,7 +100,7 @@ export const getProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
-    
+
     const updateDTO = new UpdateUserDTO(req.body);
     const errors = updateDTO.validate();
 
@@ -144,7 +142,7 @@ export const updateProfile = async (req, res) => {
 export const updateFavorites = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { favorites } = req.body; 
+    const { favorites } = req.body;
 
     if (!Array.isArray(favorites)) {
       return res.status(400).json({
@@ -152,7 +150,7 @@ export const updateFavorites = async (req, res) => {
         message: 'Los favoritos deben ser un array de IDs.',
       });
     }
-    
+
     const updatedUser = await userService.updateFavorites(userId, favorites);
 
     if (!updatedUser) {
@@ -165,7 +163,7 @@ export const updateFavorites = async (req, res) => {
     const userDto = new UserResponseDTO(updatedUser);
     const responseData = {
       ...userDto,
-      favorites: updatedUser.favorites || [] 
+      favorites: updatedUser.favorites || []
     };
 
     res.status(200).json({
@@ -181,7 +179,6 @@ export const updateFavorites = async (req, res) => {
   }
 };
 
-// Cambiar contraseña
 export const changePassword = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -213,7 +210,6 @@ export const changePassword = async (req, res) => {
   }
 };
 
-// Eliminar cuenta
 export const deleteAccount = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -238,7 +234,6 @@ export const deleteAccount = async (req, res) => {
   }
 };
 
-// Obtener todos los usuarios
 export const getAllUsers = async (req, res) => {
   try {
     const users = await userService.getAllUsers();
@@ -255,7 +250,6 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// Obtener usuario por ID
 export const getUserById = async (req, res) => {
   try {
     const { id } = req.params;

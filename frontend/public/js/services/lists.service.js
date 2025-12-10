@@ -17,7 +17,7 @@ class ListService {
         return response.json();
     }
 
-    // Nota: Necesitarás un endpoint en tu backend GET /api/lists/:id que popule los items
+
     async getListById(id) {
         const response = await fetch(`${API_URL}/${id}`, { headers: getHeaders() });
         if (!response.ok) throw new Error('Failed to fetch list details');

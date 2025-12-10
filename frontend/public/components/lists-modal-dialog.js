@@ -159,7 +159,6 @@ class ModalDialog extends HTMLElement {
         
         closeBtn.addEventListener('click', () => this.hide());
         
-        // Cerrar con ESC
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.hasAttribute('open')) {
                 this.hide();

@@ -11,17 +11,17 @@ class HomeView extends HTMLElement {
     this.activeFilter = 'All';
     this.searchQuery = '';
     this.searchDebounceTimer = null;
-    
+
     // Variables para el modal
     this.selectedTypeForAdd = 'series';
-    this.selectedMediaId = null; 
+    this.selectedMediaId = null;
   }
 
   async connectedCallback() {
     await this.loadUserData();
     if (this.user) {
-        await this.loadWatchlist();
-        this.render();
+      await this.loadWatchlist();
+      this.render();
     }
   }
 
@@ -33,11 +33,11 @@ class HomeView extends HTMLElement {
       console.error("Error cargando perfil:", error);
       // Intenta leer del cache local
       this.user = authService.getUser();
-      
+
       // FIX: Si aun así es nulo (backend caído + sin cache), redirigir a login
       if (!this.user) {
-          alert("Sesión expirada o error de conexión. Por favor inicia sesión nuevamente.");
-          window.router.navigate('/login');
+        alert("Sesión expirada o error de conexión. Por favor inicia sesión nuevamente.");
+        window.router.navigate('/login');
       }
     }
   }
@@ -57,8 +57,8 @@ class HomeView extends HTMLElement {
         const data = await response.json();
         this.watchlist = data.data || [];
       } else {
-          // Si el backend da error, inicializamos vacío para que no rompa la UI
-          this.watchlist = [];
+        // Si el backend da error, inicializamos vacío para que no rompa la UI
+        this.watchlist = [];
       }
     } catch (error) {
       console.error('Error cargando watchlist:', error);
@@ -71,7 +71,7 @@ class HomeView extends HTMLElement {
     const formData = new FormData(e.target);
     const submitBtn = this.querySelector('#submitBtn');
     const mediaType = formData.get('type');
-    
+
     const data = {
       mediaId: this.selectedMediaId, // Enviamos el ID o null
       mediaName: formData.get('mediaName'),
@@ -121,21 +121,21 @@ class HomeView extends HTMLElement {
     const resultsContainer = this.querySelector('#modalSearchResults');
 
     if (modalSearchInput) {
-        modalSearchInput.addEventListener('input', (e) => {
-            const query = e.target.value;
-            if (query.length === 0) this.selectedMediaId = null;
+      modalSearchInput.addEventListener('input', (e) => {
+        const query = e.target.value;
+        if (query.length === 0) this.selectedMediaId = null;
 
-            if (query.length < 3) {
-                resultsContainer.innerHTML = '';
-                return;
-            }
-            
-            if (this.addModalSearchDebounce) clearTimeout(this.addModalSearchDebounce);
-            this.addModalSearchDebounce = setTimeout(async () => {
-                const results = await mediaService.searchMedia(query);
-                this.renderModalSearchResults(results);
-            }, 300);
-        });
+        if (query.length < 3) {
+          resultsContainer.innerHTML = '';
+          return;
+        }
+
+        if (this.addModalSearchDebounce) clearTimeout(this.addModalSearchDebounce);
+        this.addModalSearchDebounce = setTimeout(async () => {
+          const results = await mediaService.searchMedia(query);
+          this.renderModalSearchResults(results);
+        }, 300);
+      });
     }
 
     const typeSelect = addForm.querySelector('#type');
@@ -156,15 +156,15 @@ class HomeView extends HTMLElement {
   }
 
   renderModalSearchResults(results) {
-      const container = this.querySelector('#modalSearchResults');
-      if (!container) return;
+    const container = this.querySelector('#modalSearchResults');
+    if (!container) return;
 
-      if (results.length === 0) {
-          container.innerHTML = `<div style="padding:10px; color:#888; font-size:0.9em;">No encontrado. Puedes agregarlo manualmente abajo.</div>`;
-          return;
-      }
+    if (results.length === 0) {
+      container.innerHTML = `<div style="padding:10px; color:#888; font-size:0.9em;">No encontrado. Puedes agregarlo manualmente abajo.</div>`;
+      return;
+    }
 
-      container.innerHTML = results.map(item => `
+    container.innerHTML = results.map(item => `
         <div class="search-result-item" data-item='${JSON.stringify(item)}'>
             <img src="${item.poster || 'https://placehold.co/30'}" />
             <div>
@@ -174,25 +174,25 @@ class HomeView extends HTMLElement {
         </div>
       `).join('');
 
-      container.querySelectorAll('.search-result-item').forEach(el => {
-          el.addEventListener('click', () => {
-              const item = JSON.parse(el.getAttribute('data-item'));
-              this.fillAddForm(item);
-              container.innerHTML = ''; 
-              this.querySelector('#modalSearchInput').value = '';
-          });
+    container.querySelectorAll('.search-result-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const item = JSON.parse(el.getAttribute('data-item'));
+        this.fillAddForm(item);
+        container.innerHTML = '';
+        this.querySelector('#modalSearchInput').value = '';
       });
+    });
   }
 
   fillAddForm(item) {
-      this.querySelector('#mediaName').value = item.name;
-      this.querySelector('#type').value = item.type.toLowerCase();
-      this.querySelector('#platform').value = item.platform[0] || '';
-      if(item.poster) this.querySelector('#posterUrl').value = item.poster;
-      
-      this.selectedMediaId = item._id; 
-      
-      this.querySelector('#type').dispatchEvent(new Event('change'));
+    this.querySelector('#mediaName').value = item.name;
+    this.querySelector('#type').value = item.type.toLowerCase();
+    this.querySelector('#platform').value = item.platform[0] || '';
+    if (item.poster) this.querySelector('#posterUrl').value = item.poster;
+
+    this.selectedMediaId = item._id;
+
+    this.querySelector('#type').dispatchEvent(new Event('change'));
   }
 
   renderAddModal() {
@@ -297,7 +297,7 @@ class HomeView extends HTMLElement {
 
     const closeModal = () => { this.showAddModal = false; this.render(); };
     this.querySelector('#closeModal')?.addEventListener('click', closeModal);
-    this.querySelector('.modal-overlay')?.addEventListener('click', (e) => { if(e.target === e.currentTarget) closeModal(); });
+    this.querySelector('.modal-overlay')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
 
     this.querySelectorAll('tbody tr[data-media-id]').forEach(row => {
       row.addEventListener('click', () => {
@@ -311,11 +311,11 @@ class HomeView extends HTMLElement {
   renderWatchlistTable() {
     let filtered = this.watchlist;
     if (this.activeFilter !== 'All') {
-        filtered = filtered.filter(i => i.type?.toLowerCase() === this.activeFilter.toLowerCase());
+      filtered = filtered.filter(i => i.type?.toLowerCase() === this.activeFilter.toLowerCase());
     }
     if (this.searchQuery.trim()) {
-        const q = this.searchQuery.toLowerCase();
-        filtered = filtered.filter(i => i.mediaName?.toLowerCase().includes(q));
+      const q = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(i => i.mediaName?.toLowerCase().includes(q));
     }
 
     if (filtered.length === 0) {
@@ -339,7 +339,7 @@ class HomeView extends HTMLElement {
               <td>${item.type}</td>
               <td>${item.platform || '-'}</td>
               <td>${formatProgress(item.progress, item.type)}</td>
-              <td><span class="status-badge status-${(item.status||'watching').toLowerCase().replace(/\s/g,'-')}">${item.status}</span></td>
+              <td><span class="status-badge status-${(item.status || 'watching').toLowerCase().replace(/\s/g, '-')}">${item.status}</span></td>
               <td><span class="rating">${item.rating || '-'}</span></td>
             </tr>
           `).join('')}
@@ -350,16 +350,12 @@ class HomeView extends HTMLElement {
 
   render() {
     if (!this.user) {
-      // Si llegamos aquí, loadUserData falló y no hay cache.
+
       this.innerHTML = '<div class="loading">Cargando perfil...</div>';
       return;
     }
 
-    // ... (El resto del método render y estilos se mantiene igual) ...
-    // Para ahorrar espacio, asume que aquí van los estilos y el HTML principal que ya tenías
-    // Solo me aseguré de que el modalSearchInput y la lógica de renderAddModal estén correctos arriba.
-    
-    // NOTA: Para que funcione al copiar y pegar, aquí te dejo el render COMPLETO otra vez:
+
     this.innerHTML = `
       <style>
         .watchlist-container { max-width: 1400px; margin: 0 auto; padding: 2rem; animation: fadeIn 0.5s ease-out; }

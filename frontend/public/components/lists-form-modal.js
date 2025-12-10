@@ -5,7 +5,6 @@ class ListFormModal extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        // --- Estado interno del componente ---
         this._listData = null;
         this._items = [];
         this._mode = 'create';
@@ -15,7 +14,6 @@ class ListFormModal extends HTMLElement {
     }
 
     connectedCallback() {
-        // 1. Renderizar el "esqueleto" del modal UNA SOLA VEZ.
         this.shadowRoot.innerHTML = `
             <style>:host{--form-spacing:1.25rem}.form-group{margin-bottom:var(--form-spacing)}.label{display:block;margin-bottom:.5rem;color:var(--text-secondary);font-weight:500;font-size:.875rem}input,textarea,select{width:100%;padding:.65rem 1rem;background-color:var(--background-primary);border:1px solid #475569;border-radius:8px;color:var(--text-primary);font-size:1rem;transition:all .2s ease;box-sizing:border-box}input:focus,textarea:focus,select:focus{outline:0;border-color:var(--primary-color);box-shadow:0 0 0 3px rgba(99,102,241,.2)}textarea{resize:vertical;min-height:80px;font-family:inherit}select{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:right .75rem center;background-repeat:no-repeat;background-size:1.25em}.items-section{margin-top:calc(var(--form-spacing) * 1.5);padding-top:var(--form-spacing);border-top:1px solid var(--border-color)}.items-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}.items-header h4{margin:0;color:var(--text-primary);font-weight:600;font-size:1rem}.items-list-container{display:flex;flex-direction:column;gap:.5rem}.media-item{display:flex;align-items:center;justify-content:space-between;padding:.5rem;border-radius:6px;background-color:var(--background-primary)}.media-info{display:flex;align-items:center;gap:1rem;min-width:0}.media-poster{width:36px;height:54px;object-fit:cover;border-radius:4px;flex-shrink:0}.media-name{font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.remove-item-btn{background:0 0;border:none;color:var(--text-secondary);cursor:pointer;padding:.25rem;border-radius:50%;display:flex;transition:all .2s ease}.remove-item-btn:hover{color:var(--error);background-color:rgba(239,68,68,.1)}.btn{padding:.75rem 1.5rem;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s ease;text-align:center;width:100%;margin-top:1rem}.btn-primary{background:var(--primary-color);color:#fff}.btn-primary:hover{background:var(--primary-dark)}.btn-secondary{background:var(--background-tertiary);color:var(--text-primary);padding:.5rem 1rem;font-size:.875rem;width:auto;margin:0}.btn-secondary:hover{opacity:.9}.media-selector-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:10;display:flex;align-items:center;justify-content:center}.media-selector{width:90%;max-width:450px;background:var(--background-secondary);border-radius:8px;box-shadow:0 5px 15px rgba(0,0,0,.3);display:flex;flex-direction:column;max-height:70vh}.media-selector-header{padding:1rem;border-bottom:1px solid var(--border-color);font-weight:600}.media-selector-list{overflow-y:auto;padding:.5rem}.media-selector-item{display:flex;align-items:center;gap:1rem;padding:.75rem;border-radius:6px;cursor:pointer}.media-selector-item:hover{background:var(--background-tertiary)}.media-selector-item input[type=checkbox]{width:18px;height:18px}.media-selector-footer{padding:1rem;border-top:1px solid var(--border-color);display:flex;justify-content:flex-end;gap:.5rem}</style>
             <modal-dialog id="form-modal">
@@ -24,7 +22,6 @@ class ListFormModal extends HTMLElement {
             </modal-dialog>
         `;
 
-        // 2. Usar delegación de eventos en el shadowRoot para manejar todas las interacciones.
         this.shadowRoot.addEventListener('submit', this._onSubmit.bind(this));
         this.shadowRoot.addEventListener('click', this._handleClicks.bind(this));
         this.shadowRoot.addEventListener('input', this._handleInputs.bind(this));
@@ -40,7 +37,6 @@ class ListFormModal extends HTMLElement {
         if (titleEl) titleEl.textContent = title;
         if (!contentEl) return;
 
-        // 3. Este método solo actualiza el CONTENIDO, no el modal en sí.
         contentEl.innerHTML = `
             <form id="list-form">
                 <div class="form-group"><label for="name" class="label">Name</label><input type="text" id="name" name="name" value="${this._listData?.name || ''}" required></div>
@@ -115,7 +111,7 @@ class ListFormModal extends HTMLElement {
         this._mode = 'create';
         this._listData = null;
         this._items = [];
-        this._isMediaSelectorOpen = false; // <-- LA CORRECCIÓN CLAVE: resetear estado
+        this._isMediaSelectorOpen = false;
         this._searchResults = [];
         this._renderContent();
         this.shadowRoot.querySelector('#form-modal').show();
@@ -125,7 +121,7 @@ class ListFormModal extends HTMLElement {
         this._mode = 'edit';
         this._listData = list;
         this._items = list.items || [];
-        this._isMediaSelectorOpen = false; // <-- LA CORRECCIÓN CLAVE: resetear estado
+        this._isMediaSelectorOpen = false; 
         this._searchResults = [];
         this._renderContent();
         this.shadowRoot.querySelector('#form-modal').show();

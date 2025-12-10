@@ -7,36 +7,36 @@ class AuthService {
     this.userKey = 'user_data';
   }
 
-  // Obtener el token almacenado
+
   getToken() {
     return localStorage.getItem(this.tokenKey);
   }
 
-  // Guardar token y datos de usuario
+  
   saveAuthData(token, user) {
     localStorage.setItem(this.tokenKey, token);
     localStorage.setItem(this.userKey, JSON.stringify(user));
   }
 
-  // Obtener datos del usuario
+ 
   getUser() {
     const userData = localStorage.getItem(this.userKey);
     return userData ? JSON.parse(userData) : null;
   }
 
-  // Verificar si el usuario está autenticado
+ 
   isAuthenticated() {
     return !!this.getToken();
   }
 
-  // Cerrar sesión
+  
   logout() {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
     window.dispatchEvent(new Event('auth-changed'));
   }
 
-  // Registrar nuevo usuario
+ 
   async register(email, password, displayName, avatarUrl = '') {
     try {
       const response = await fetch(`${API_URL}/users/register`, {
@@ -58,7 +58,7 @@ class AuthService {
         throw new Error(data.message || 'Error en el registro');
       }
 
-      // Guardar token y datos del usuario
+    
       this.saveAuthData(data.data.token, data.data.user);
       window.dispatchEvent(new Event('auth-changed'));
 
@@ -68,7 +68,7 @@ class AuthService {
     }
   }
 
-  // Iniciar sesión
+ 
   async login(email, password) {
     try {
       const response = await fetch(`${API_URL}/users/login`, {
@@ -88,7 +88,7 @@ class AuthService {
         throw new Error(data.message || 'Error en el login');
       }
 
-      // Guardar token y datos del usuario
+    
       this.saveAuthData(data.data.token, data.data.user);
       window.dispatchEvent(new Event('auth-changed'));
 
@@ -155,7 +155,6 @@ class AuthService {
         throw new Error(data.message || 'Error al actualizar el perfil');
       }
 
-      // Actualizar datos del usuario
       localStorage.setItem(this.userKey, JSON.stringify(data.data));
       window.dispatchEvent(new Event('auth-changed'));
 

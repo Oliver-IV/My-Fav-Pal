@@ -20,13 +20,13 @@ export const progressFieldsByType = {
   ]
 };
 
-// Obtener campos de progreso para un tipo específico
+
 export function getProgressFields(mediaType) {
   const type = (mediaType || '').toLowerCase();
   return progressFieldsByType[type] || [];
 }
 
-// Formatear el display del progreso según el tipo
+
 export function formatProgress(progress, mediaType) {
   if (!progress) return '-';
   
@@ -70,7 +70,7 @@ export function formatProgress(progress, mediaType) {
       break;
   }
   
-  // Fallback para tipos no manejados o campos legacy
+
   if (progress.episode) return `Episode ${progress.episode}`;
   if (progress.chapter) return `Chapter ${progress.chapter}`;
   if (progress.page) return `Page ${progress.page}`;
@@ -78,7 +78,7 @@ export function formatProgress(progress, mediaType) {
   return '-';
 }
 
-// Extraer datos de progreso del formulario
+
 export function extractProgressFromForm(formData, mediaType) {
   const fields = getProgressFields(mediaType);
   const progress = {};
@@ -100,7 +100,7 @@ export function extractProgressFromForm(formData, mediaType) {
   return Object.keys(progress).length > 0 ? progress : {};
 }
 
-// Renderizar campos de progreso HTML
+
 export function renderProgressFields(mediaType, currentProgress = {}) {
   const fields = getProgressFields(mediaType);
   

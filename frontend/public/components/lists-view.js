@@ -19,13 +19,12 @@ class ListsView extends HTMLElement {
         try {
             const result = await listService.getLists();
             this.lists = result.data;
-            // --- LOG 1: VERIFICAR DATOS INICIALES ---
             console.log('1. Lists loaded into the component:', this.lists);
             this.renderLists();
         } catch (error) {
             console.error('Error fetching lists:', error);
             const grid = this.querySelector('#lists-grid');
-            if(grid) grid.innerHTML = `<p class="error-message">Could not load your lists. Please try again later.</p>`;
+            if (grid) grid.innerHTML = `<p class="error-message">Could not load your lists. Please try again later.</p>`;
         }
     }
 
@@ -138,7 +137,7 @@ class ListsView extends HTMLElement {
     renderLists() {
         const grid = this.querySelector('#lists-grid');
         if (!grid) return;
-        
+
         const searchTerm = this.querySelector('#list-search').value.toLowerCase();
         const filteredLists = this.lists.filter(list => list.name.toLowerCase().includes(searchTerm));
 
@@ -196,7 +195,6 @@ class ListsView extends HTMLElement {
                     break;
                 case 'edit': {
                     const { data: listDetails } = await listService.getListById(id);
-                    // --- LOG 2: VERIFICAR DATOS ANTES DE EDITAR ---
                     console.log('2. Data sent to Edit Wizard:', listDetails);
                     const editWizard = this.querySelector('#list-edit-wizard');
                     if (editWizard && editWizard.open) {
@@ -219,7 +217,7 @@ class ListsView extends HTMLElement {
                     break;
             }
         });
-        
+
         const createBtn = this.querySelector('#create-list-btn');
         if (createBtn) {
             createBtn.addEventListener('click', () => {
@@ -237,7 +235,6 @@ class ListsView extends HTMLElement {
             searchInput.addEventListener('input', () => this.renderLists());
         }
 
-        // Listener para el evento 'save' del asistente de creación
         const createWizard = this.querySelector('#list-create-wizard');
         if (createWizard) {
             createWizard.addEventListener('save', async (e) => {
@@ -252,7 +249,6 @@ class ListsView extends HTMLElement {
             });
         }
 
-        // Listener para cuando se hace click en "Edit" desde la vista de detalles
         const viewDetail = this.querySelector('#list-view-detail');
         if (viewDetail) {
             viewDetail.addEventListener('edit', async (e) => {
@@ -264,7 +260,6 @@ class ListsView extends HTMLElement {
             });
         }
 
-        // Listener para el evento 'save' del asistente de edición
         const editWizard = this.querySelector('#list-edit-wizard');
         if (editWizard) {
             editWizard.addEventListener('save', async (e) => {
@@ -275,9 +270,9 @@ class ListsView extends HTMLElement {
 
                     const normalizedItems = restOfData.items.map(item => {
                         const mediaIdValue = (typeof item.mediaId === 'object' && item.mediaId !== null)
-                            ? item.mediaId._id  
-                            : item.mediaId;   
-                        
+                            ? item.mediaId._id
+                            : item.mediaId;
+
                         return { mediaId: mediaIdValue };
                     });
 
@@ -285,7 +280,7 @@ class ListsView extends HTMLElement {
                         ...restOfData,
                         items: normalizedItems
                     };
-                    
+
                     await listService.updateList(id, updatePayload);
                     this.fetchLists();
                 } catch (error) {

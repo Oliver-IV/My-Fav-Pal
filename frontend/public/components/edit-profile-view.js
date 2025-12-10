@@ -4,7 +4,7 @@ class EditProfileView extends HTMLElement {
     constructor() {
         super();
         this.user = authService.getUser() || {};
-        this.watchlist = []; 
+        this.watchlist = [];
         this.selectedFavorites = [];
         this.isLoading = true;
     }
@@ -24,12 +24,12 @@ class EditProfileView extends HTMLElement {
         try {
             await authService.getProfile();
             const currentUser = authService.getUser();
-            
+
             if (currentUser) {
                 this.user = currentUser;
-                this.watchlist = this.user.watchlist || []; 
+                this.watchlist = this.user.watchlist || [];
 
-                this.selectedFavorites = (this.user.favorites || []).map(f => f._id || f); 
+                this.selectedFavorites = (this.user.favorites || []).map(f => f._id || f);
             }
         } catch (error) {
             console.error("Error cargando datos:", error);
@@ -44,7 +44,7 @@ class EditProfileView extends HTMLElement {
 
         const nameInput = this.querySelector('#displayName');
         const cityInput = this.querySelector('#nationality');
-        
+
         if (nameInput) this.user.displayName = nameInput.value;
         if (cityInput) this.user.city = cityInput.value;
 
@@ -59,39 +59,39 @@ class EditProfileView extends HTMLElement {
             }
             this.selectedFavorites.push(mediaId);
         }
-        
+
         this.render();
         this.attachEventListeners();
-        
+
 
     }
 
     async handleSave(e) {
         e.preventDefault();
-        
+
         const displayName = this.querySelector('#displayName').value;
         const city = this.querySelector('#nationality').value;
-        const avatarUrl = this.user.avatarUrl || ''; 
-        
+        const avatarUrl = this.user.avatarUrl || '';
+
         const btn = this.querySelector('.save-btn');
         const originalText = btn.textContent;
-        
+
         try {
             btn.textContent = 'Guardando...';
             btn.disabled = true;
 
             await authService.updateProfile(displayName, avatarUrl, city);
 
-            await authService.updateFavorites(this.selectedFavorites); 
+            await authService.updateFavorites(this.selectedFavorites);
 
             await authService.getProfile();
-            
-            console.log('Perfil actualizado con éxito'); 
 
-            window.location.hash = '#/profile'; 
-            
+            console.log('Perfil actualizado con éxito');
+
+            window.location.hash = '#/profile';
+
         } catch (error) {
-            alert('Error al actualizar: ' + error.message); 
+            alert('Error al actualizar: ' + error.message);
             btn.textContent = originalText;
             btn.disabled = false;
         }
@@ -170,7 +170,7 @@ class EditProfileView extends HTMLElement {
         `;
 
         const watchlistItems = this.watchlist.length > 0 ? this.watchlist.map(item => {
-            const mediaId = item.mediaId || item._id; 
+            const mediaId = item.mediaId || item._id;
             const isSelected = this.selectedFavorites.includes(mediaId);
             const poster = item.posterUrl || `https://placehold.co/100x150/444/FFF?text=Sin+Img`;
             const title = item.mediaName || 'Media';
@@ -236,7 +236,7 @@ class EditProfileView extends HTMLElement {
         cards.forEach(card => {
             card.addEventListener('click', () => {
                 const mediaId = card.getAttribute('data-id');
-                if(mediaId) this.toggleFavorite(mediaId);
+                if (mediaId) this.toggleFavorite(mediaId);
             });
         });
     }
